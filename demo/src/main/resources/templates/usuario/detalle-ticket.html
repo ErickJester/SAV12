@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Ticket - SAV12</title>
+    <link rel="stylesheet" th:href="@{/css/gumby.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/ticket-detail.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .ticket-detail-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .ticket-detail-header .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge.ABIERTO {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .badge.EN_PROCESO {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .badge.RESUELTO {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge.CERRADO {
+            background: #6b7280;
+            color: white;
+        }
+
+        .badge-priority {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-priority.ALTA {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-priority.MEDIA {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-priority.BAJA {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .info-item strong {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: #ff6b35;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #ff6b35;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+
+        .timeline-action {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .timeline-user {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6b35;
+            color: #1e293b;
+        }
+
+        .comment {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .comment-header strong {
+            color: #1e293b;
+        }
+
+        .comment-date {
+            color: #64748b;
+        }
+
+        .comment p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .no-comments {
+            background: #f0fdf4;
+            border: 1px dashed #86efac;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            color: #166534;
+        }
+
+        .add-comment {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .add-comment h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        .textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e55a25;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .evidence-image {
+            margin: 15px 0;
+        }
+
+        .evidence-image img {
+            max-width: 100%;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .ticket-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body style="background: #f8fafc;">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <header style="margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 28px; color: #1e293b;">Detalle del Ticket #<span th:text="${ticket.id}">1</span></h1>
+                <a th:href="@{/logout}" class="btn btn-primary" style="background: #ef4444;">Cerrar Sesión</a>
+            </div>
+        </header>
+
+        <nav style="margin-bottom: 25px;">
+            <div style="display: flex; gap: 10px;">
+                <a th:href="@{/usuario/panel}" class="btn" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0;">Panel Principal</a>
+                <a th:href="@{/usuario/crear-ticket}" class="btn" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0;">Crear Ticket</a>
+                <a th:href="@{/usuario/mis-tickets}" class="btn" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0;">Mis Tickets</a>
+            </div>
+        </nav>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+            <!-- Contenido Principal -->
+            <div>
+                <!-- Información del Ticket -->
+                <div class="ticket-detail-header">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h2 style="margin: 0 0 10px 0; font-size: 24px;" th:text="${ticket.titulo}">Título del Ticket</h2>
+                            <p style="margin: 0; font-size: 13px; opacity: 0.9;">Creado el <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+                        </div>
+                        <span class="badge" th:classappend="${ticket.estado.name()}" 
+                              th:text="${ticket.estado}">Estado</span>
+                    </div>
+                </div>
+
+                <!-- Información Rápida -->
+                <div class="ticket-grid">
+                    <div class="info-item">
+                        <strong>ID del Ticket</strong>
+                        <span th:text="${ticket.id}">1</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Categoría</strong>
+                        <span th:text="${ticket.categoria?.nombre}">N/A</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Ubicación</strong>
+                        <span th:if="${ticket.ubicacion != null}" 
+                              th:text="${ticket.ubicacion.edificio + ' - Piso ' + ticket.ubicacion.piso + ' - ' + ticket.ubicacion.salon}">N/A</span>
+                        <span th:if="${ticket.ubicacion == null}">No especificada</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Prioridad</strong>
+                        <span class="badge-priority" th:classappend="${ticket.prioridad.name()}"
+                              th:text="${ticket.prioridad}">Media</span>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="section-card">
+                    <h3 class="section-title">Descripción del Problema</h3>
+                    <p th:text="${ticket.descripcion}" style="color: #475569; line-height: 1.6; margin: 0;">Descripción del problema</p>
+                </div>
+
+                <!-- Evidencia -->
+                <div th:if="${ticket.evidencia != null and !ticket.evidencia.isEmpty()}" class="section-card">
+                    <h3 class="section-title">Evidencia Adjunta</h3>
+                    <div class="evidence-image">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidencia})}" 
+                             alt="Evidencia del ticket">
+                    </div>
+                </div>
+
+                <!-- Información de Técnico -->
+                <div class="section-card">
+                    <h3 class="section-title">Información de Atención</h3>
+                    <div class="ticket-grid">
+                        <div class="info-item">
+                            <strong>Técnico Asignado</strong>
+                            <span th:text="${ticket.tecnico != null ? ticket.tecnico.nombre : 'Aún sin asignar'}">Sin asignar</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Última Actualización</strong>
+                            <span th:text="${ticket.fechaActualizacion != null ? #temporals.format(ticket.fechaActualizacion, 'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comentarios -->
+                <div class="section-card">
+                    <h3 class="section-title">Comentarios</h3>
+                    
+                    <div th:if="${not #lists.isEmpty(comentarios)}" class="comments-list">
+                        <div class="comment" th:each="comentario : ${comentarios}">
+                            <div class="comment-header">
+                                <strong th:text="${comentario.usuario.nombre}">Usuario</strong>
+                                <span class="comment-date" th:text="${#temporals.format(comentario.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                            </div>
+                            <p th:text="${comentario.contenido}">Contenido del comentario</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(comentarios)}" class="no-comments">
+                        <i class="bi bi-chat-left-dots" style="font-size: 20px; margin-bottom: 10px; display: block;"></i>
+                        <p style="margin: 0;">No hay comentarios aún. Sé el primero en comentar.</p>
+                    </div>
+
+                    <!-- Formulario para agregar comentario -->
+                    <div th:if="${ticket.estado.name() != 'CERRADO'}" class="add-comment">
+                        <h4>Agregar Comentario</h4>
+                        <form th:action="@{/usuario/ticket/{id}/comentar(id=${ticket.id})}" method="post">
+                            <textarea name="contenido" rows="4" class="textarea" 
+                                      placeholder="Escribe tu comentario para comunicarte con el técnico..." required></textarea>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Enviar Comentario</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Opciones de Reabrir -->
+                <div th:if="${ticket.estado.name() == 'RESUELTO' || ticket.estado.name() == 'CERRADO'}" 
+                     class="section-card">
+                    <form th:action="@{/usuario/ticket/{id}/reabrir(id=${ticket.id})}" method="post">
+                        <button type="submit" class="btn btn-warning" style="width: 100%;">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reabrir Ticket
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar - Historial -->
+            <div>
+                <div class="section-card">
+                    <h3 class="section-title">Historial de Acciones</h3>
+                    <div th:if="${not #lists.isEmpty(historial)}" class="timeline">
+                        <div class="timeline-item" th:each="h : ${historial}">
+                            <div class="timeline-date" th:text="${#temporals.format(h.fechaAccion, 'dd/MM HH:mm')}">Fecha</div>
+                            <div class="timeline-action" th:text="${h.accion}">Acción</div>
+                            <div class="timeline-user">Por: <span th:text="${h.usuario.nombre}">Usuario</span></div>
+                            <div th:if="${h.detalles != null}" style="font-size: 12px; color: #64748b; margin-top: 5px;" th:text="${h.detalles}">Detalles</div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(historial)}" class="no-comments" style="text-align: center; padding: 20px;">
+                        <p style="margin: 0; color: #666;">Sin historial aún</p>
+                    </div>
+                </div>
+
+                <div class="section-card" style="background: #f0f9ff; border-left: 4px solid #0ea5e9;">
+                    <h4 style="margin: 0 0 10px 0; color: #0369a1;">Información de Estado</h4>
+                    <p style="font-size: 13px; color: #475569; margin: 0;">
+                        <i class="bi bi-info-circle"></i>
+                        <span th:switch="${ticket.estado.name()}">
+                            <span th:case="'ABIERTO'">Tu ticket está abierto y pendiente de ser asignado a un técnico.</span>
+                            <span th:case="'EN_PROCESO'">Un técnico está trabajando en tu solicitud.</span>
+                            <span th:case="'RESUELTO'">Tu ticket ha sido resuelto. Puedes reabrirlo si tienes otra duda.</span>
+                            <span th:case="'CERRADO'">Tu ticket fue cerrado. Puedes reabrirlo si lo necesitas.</span>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

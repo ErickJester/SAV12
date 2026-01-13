@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <!-- Meta tags & title -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>SAV12 - Plataforma de Gestión de Incidencias</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" th:href="@{/css/gumby.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/animate.css}">
+
+    <!-- Modernizr -->
+    <script th:src="@{/js/modernizr-2.6.2.min.js}"></script>
+
+</head>
+
+<body>
+
+<!-- Preloader -->
+<div id="preloader">
+    <div id="loading-animation">&nbsp;</div>
+</div>
+
+<!-- NAVIGATION -->
+<div class="cbp-af-header">
+    <nav>
+
+        <!-- Social -->
+        <div class="right">
+            <iframe src="//www.facebook.com/plugins/like.php?href=http://www.baribal.be/showpage/&amp;layout=standard&amp;action=like&amp;show_faces=false&amp;share=true&amp;height=35"
+                    scrolling="no" frameborder="0"
+                    style="border:none; overflow:hidden; width:170px; height:20px; margin-right:20px;">
+            </iframe>
+
+            <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+            <script>
+                !function(d,s,id){
+                    var js,fjs=d.getElementsByTagName(s)[0],
+                        p=/^http:/.test(d.location)?'http':'https';
+                    if(!d.getElementById(id)){
+                        js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';
+                        fjs.parentNode.insertBefore(js,fjs);
+                    }
+                }(document,'script','twitter-wjs');
+            </script>
+        </div>
+
+        <!-- Logo -->
+        <div id="logo">
+            <a href="#"></a>
+        </div>
+
+        <!-- Menu -->
+        <ul id="nav">
+    <li><a href="/registro">Registrarte</a></li>
+    <li><a href="/login">Iniciar sesión</a></li>
+</ul>
+
+    </nav>
+</div>
+
+<!-- HEADER -->
+<section class="page1">
+    <div class="huge-title centered">
+
+        <div class="logo-phone centered">
+            <img alt="YOURLOGO" th:src="@{/img/logo-phone.png}">
+        </div>
+
+        <h1>SAV12: PLATAFORMA DE GESTIÓN DE INCIDENCIAS</h1>
+
+        <a href="#container" class="button-white goto">Saber más</a>
+    </div>
+
+    <div class="go-down twelve columns">
+        <a href="#container" class="goto">
+            <img th:src="@{/img/down.png}" alt="MORE">
+        </a>
+    </div>
+</section>
+
+<!-- MAIN CONTAINER -->
+<div id="container" class="container">
+
+    <!-- SECTION 2 -->
+    <section class="page2">
+        <div class="row">
+
+            <div class="six columns article make-it-appear-right">
+                <h3>¿Qué hace SAV12?</h3>
+                <p>
+                    El sistema permite registrar y dar seguimiento a problemas técnicos,
+                    desde que se reportan hasta que se solucionan.
+                </p>
+                <a class="js-open-modal button-blue">¿Cómo Funciona?</a>
+            </div>
+
+            <div class="five columns picture make-it-appear-left">
+                <img th:src="@{/img/errores.jpg}" alt="EXAMPLE">
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="page3">
+        <div class="row">
+
+            <div class="five columns picture make-it-appear-right">
+                <img th:src="@{/img/control.png}" alt="EXAMPLE">
+            </div>
+
+            <div class="six columns article make-it-appear-left">
+                <h3>Control de Calidad y Tiempos (SLA)</h3>
+                <p>
+                    Priorización, cálculo automático del tiempo límite y alertas de vencimiento.
+                </p>
+
+                <a href="/levantar-reporte" class="button-green">Levantar reporte o dar seguimiento</a>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <section class="footer">
+        <div class="row">
+            <div class="nine columns centered">
+
+                <!-- Footer menu -->
+                <ul>
+                    <li><a href="#">Equipo de trabajo</a></li>
+                    <li><a href="#">Iniciativa</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">Twitter</a></li>
+                </ul>
+
+                <p class="copyright">
+                    Proyecto basado en plantilla ShowPage · Licencia CC.
+                </p>
+
+                <img class="logo" th:src="@{/img/logo.png}" alt="Logo">
+
+            </div>
+        </div>
+    </section>
+
+</div>
+
+
+
+
+<!-- MODAL EXPLICATIVO -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+
+        <button class="modal-close">&times;</button>
+
+        <h2>¿Cómo funciona SAV12?</h2>
+        <p>
+            SAV12 es una plataforma para registrar, priorizar y dar seguimiento
+            a incidencias técnicas dentro de una organización.
+        </p>
+
+        <h3>Flujo básico</h3>
+        <ol>
+            <li><strong>Registro de incidencia:</strong> el usuario describe el problema.</li>
+            <li><strong>Clasificación:</strong> se asigna prioridad y categoría.</li>
+            <li><strong>Asignación:</strong> el sistema asigna la incidencia a un técnico.</li>
+            <li><strong>Seguimiento:</strong> se registran avances y cambios de estado.</li>
+            <li><strong>Cierre:</strong> se documenta la solución y se mide el tiempo (SLA).</li>
+        </ol>
+
+        <h3>Roles principales</h3>
+        <ul>
+            <li><strong>Usuario:</strong> reporta incidencias y consulta el estado.</li>
+            <li><strong>Técnico:</strong> atiende y actualiza los reportes.</li>
+            <li><strong>Administrador:</strong> configura prioridades, SLAs y usuarios.</li>
+        </ul>
+
+        <p class="modal-note">
+            Esta es una versión de demostración de la plataforma SAV12.
+            Próximamente se integrarán formularios reales para levantar reportes.
+        </p>
+
+    </div>
+</div>
+
+<!-- Estilos del modal -->
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+    }
+
+    .modal.is-visible {
+        display: block;
+    }
+
+    .modal-content {
+        background: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        width: 60%;
+        border-radius: 8px;
+        position: relative;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-close {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>
+
+
+
+
+<!-- JAVASCRIPT -->
+<script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/classie.js}"></script>
+<script th:src="@{/js/waypoints.min.js}"></script>
+<script th:src="@{/js/jquery.scrollto.js}"></script>
+<script th:src="@{/js/mediaCheck.js}"></script>
+
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7c3aed;
+            --secondary-color: #6d28d9;
+            --light-bg: #f8fafc;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            background-color: var(--light-bg);
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-custom .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-custom .nav-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 4px solid var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .stat-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .stat-card.abierto { border-top-color: #ef4444; }
+        .stat-card.abierto h3 { color: #ef4444; }
+
+        .stat-card.en_proceso { border-top-color: #f59e0b; }
+        .stat-card.en_proceso h3 { color: #f59e0b; }
+
+        .stat-card.resuelto { border-top-color: #10b981; }
+        .stat-card.resuelto h3 { color: #10b981; }
+
+        .stat-card.cerrado { border-top-color: #8b5cf6; }
+        .stat-card.cerrado h3 { color: #8b5cf6; }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .sla-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .sla-percentage {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #d97706;
+            margin: 1rem 0;
+        }
+
+        .sla-detail-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid;
+        }
+
+        .sla-detail-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .sla-detail-card.success h4 {
+            color: var(--success-color);
+        }
+
+        .sla-detail-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .sla-detail-card.warning h4 {
+            color: var(--warning-color);
+        }
+
+        .sla-detail-card h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .sla-detail-card p {
+            color: #64748b;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .table-responsive {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .table thead th {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1rem;
+            border: none;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: #475569;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-abierto {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-en_proceso {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-resuelto {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-cerrado {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .badge-reabierto {
+            background-color: #dbeafe;
+            color: #0c4a6e;
+        }
+
+        .export-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-custom {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb-item {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-custom .navbar-brand {
+                font-size: 1.1rem;
+            }
+
+            .stat-card h3 {
+                font-size: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .sla-percentage {
+                font-size: 2.5rem;
+            }
+
+            .sla-detail-card h4 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media print {
+            .navbar-custom,
+            .export-section {
+                display: none;
+            }
+
+            .stat-card {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-pie-chart-fill me-2"></i>Panel de Reportes
+            </span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">
+                            <i class="bi bi-box-arrow-right me-1"></i>Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin/panel}"><i class="bi bi-house"></i> Panel</a></li>
+                <li class="breadcrumb-item active"><i class="bi bi-file-earmark-chart"></i> Reportes</li>
+            </ol>
+        </nav>
+
+        <!-- Resumen General -->
+        <form method="get" th:action="@{/admin/reportes}" class="row g-2 align-items-center mb-3">
+            <div class="col-auto">
+                <select name="periodo" class="form-select form-select-sm" onchange="toggleCustom(this.value)">
+                    <option value="">Último</option>
+                    <option value="semanal" th:selected="${periodoSeleccionado=='semanal'}">Última semana</option>
+                    <option value="mensual" th:selected="${periodoSeleccionado=='mensual'}">Último mes</option>
+                    <option value="custom" th:selected="${periodoSeleccionado=='custom'}">Personalizado</option>
+                </select>
+            </div>
+            <div class="col-auto" id="customFrom" th:if="${periodoSeleccionado=='custom'}">
+                <input type="date" name="desde" class="form-control form-control-sm" th:value="${desde}" required>
+            </div>
+            <div class="col-auto" id="customTo" th:if="${periodoSeleccionado=='custom'}">
+                <input type="date" name="hasta" class="form-control form-control-sm" th:value="${hasta}" required>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary btn-sm" type="submit">Aplicar</button>
+                <a th:href="@{/admin/reportes}" class="btn btn-outline-secondary btn-sm">Reiniciar</a>
+            </div>
+        </form>
+
+        <h2 class="section-title"><i class="bi bi-graph-up me-2"></i>Resumen General</h2>
+        <div class="row">
+            <div class="col-md-4 col-lg-2">
+                <div class="stat-card">
+                    <p>Total de Tickets</p>
+                    <h3 th:text="${reporteGeneral.totalTickets}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
+                <div class="stat-card abierto">
+                    <p>Abiertos</p>
+                    <h3 th:text="${reporteGeneral.ticketsAbiertos}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
+                <div class="stat-card en_proceso">
+                    <p>En Proceso</p>
+                    <h3 th:text="${reporteGeneral.ticketsEnProceso}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
+                <div class="stat-card resuelto">
+                    <p>Resueltos</p>
+                    <h3 th:text="${reporteGeneral.ticketsResueltos}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
+                <div class="stat-card cerrado">
+                    <p>Cerrados</p>
+                    <h3 th:text="${reporteGeneral.ticketsCerrados}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
+                <div class="stat-card">
+                    <p>Reabiertos</p>
+                    <h3 th:text="${reporteGeneral.ticketsReabiertos}">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLA Compliance -->
+        <h2 class="section-title"><i class="bi bi-clock-history me-2"></i>Cumplimiento de SLA</h2>
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="sla-card">
+                    <h4 class="mb-3"><i class="bi bi-percent"></i> Cumplimiento General</h4>
+                    <div class="sla-percentage" th:text="${reporteSLA.porcentajeCumplimiento + '%'}">0%</div>
+                    <p class="mb-0">Porcentaje de tickets resueltos dentro del tiempo SLA</p>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card success">
+                            <h4 th:text="${reporteSLA.ticketsCumplenSLA}">0</h4>
+                            <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card warning">
+                            <h4 th:text="${reporteSLA.ticketsIncumplenSLA}">0</h4>
+                            <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado Distribution -->
+        <h2 class="section-title"><i class="bi bi-list-check me-2"></i>Distribución por Estado</h2>
+        <div class="table-responsive mb-4">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-hash"></i> Estado</th>
+                        <th><i class="bi bi-calculator"></i> Cantidad de Tickets</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${reportePorEstado}">
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="'badge-' + ${entry.key.toLowerCase().replace('_', '_')}"
+                                  th:text="${entry.key}">Estado</span>
+                        </td>
+                        <td class="fw-bold" th:text="${entry.value}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Export Options -->
+        <h2 class="section-title"><i class="bi bi-download me-2"></i>Exportar Reportes</h2>
+        <div class="export-section">
+            <div class="row">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <button class="btn btn-custom btn-print w-100" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i>Imprimir Reporte
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-custom btn-export w-100" onclick="exportToCSV()">
+                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportar a CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+    <script>
+        function exportToCSV() {
+            alert('Funcionalidad de exportación a CSV en desarrollo');
+            // Aquí se implementaría la exportación real
+        }
+        function toggleCustom(value) {
+            try {
+                var from = document.getElementById('customFrom');
+                var to = document.getElementById('customTo');
+                if (!from || !to) return;
+                if (value === 'custom') {
+                    from.style.display = 'inline-block';
+                    to.style.display = 'inline-block';
+                } else {
+                    from.style.display = 'none';
+                    to.style.display = 'none';
+                }
+            } catch(e) { /* no-op */ }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - SAV12</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --border-light: #e2e8f0;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 30px 20px;
+        }
+
+        .register-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .register-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
+            padding: 35px 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .register-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .register-header p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .register-body {
+            padding: 35px;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .role-box {
+            border: 2px solid var(--border-light);
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: white;
+            font-size: 14px;
+        }
+
+        .role-box:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-color);
+            background: var(--light-bg);
+        }
+
+        .role-box-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .role-selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+            color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            padding: 12px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .button-register {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .button-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden-group {
+            display: none;
+        }
+
+        .hidden-group.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .text-muted {
+            font-size: 13px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="register-container">
+    <div class="register-card">
+        
+        <div class="register-header">
+            <h2><i class="bi bi-person-check"></i> Crear Cuenta</h2>
+            <p>Selecciona tu tipo de cuenta y regístrate</p>
+        </div>
+
+        <div class="register-body">
+            <!-- SELECTOR DE ROLES -->
+            <div class="role-selector">
+                <div class="role-box" data-role="USUARIO">
+                    <i class="bi bi-person role-box-icon"></i>
+                    Usuario
+                </div>
+                <div class="role-box" data-role="ADMIN">
+                    <i class="bi bi-shield-lock role-box-icon"></i>
+                    Administrador
+                </div>
+                <div class="role-box" data-role="TECNICO">
+                    <i class="bi bi-tools role-box-icon"></i>
+                    Técnico
+                </div>
+            </div>
+
+            <!-- FORMULARIO -->
+            <form th:action="@{/registro}" th:object="${registro}" method="post">
+
+                <input type="hidden" id="tipoCuenta" th:field="*{rol}" required>
+
+                <div class="form-group">
+                    <label><i class="bi bi-person-fill"></i> Nombre completo</label>
+                    <input type="text" th:field="*{nombre}" class="form-control" placeholder="Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="bi bi-envelope"></i> Correo electrónico</label>
+                    <input type="email" th:field="*{correo}" class="form-control" placeholder="juan@ejemplo.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="bi bi-lock"></i> Contraseña</label>
+                    <input type="password" th:field="*{password}" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="bi bi-lock"></i> Confirmar contraseña</label>
+                    <input type="password" th:field="*{password2}" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <!-- SOLO USUARIO -->
+                <div class="form-group hidden-group" id="boleta-group">
+                    <label><i class="bi bi-card-text"></i> Número de boleta</label>
+                    <input type="text" th:field="*{boleta}" class="form-control" id="boleta" placeholder="Ejemplo: 2021123456">
+                    <small class="text-muted">Tu número de boleta ESCOM</small>
+                </div>
+
+                <!-- SOLO ADMIN / TECNICO -->
+                <div class="form-group hidden-group" id="trabajador-group">
+                    <label><i class="bi bi-hash"></i> ID de trabajador</label>
+                    <input type="text" th:field="*{idTrabajador}" class="form-control" id="idTrabajador" placeholder="ID del trabajador">
+                    <small class="text-muted">Tu identificación como trabajador</small>
+                </div>
+
+                <button class="button-register" type="submit">
+                    <i class="bi bi-check-circle"></i> Registrarme
+                </button>
+            </form>
+
+            <div class="login-link">
+                ¿Ya tienes cuenta? <a href="/login"><i class="bi bi-box-arrow-in-right"></i> Inicia sesión</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const boxes = document.querySelectorAll('.role-box');
+    const rolInput = document.getElementById('tipoCuenta');
+    const boletaGroup = document.getElementById('boleta-group');
+    const trabajadorGroup = document.getElementById('trabajador-group');
+    const boletaInput = document.getElementById('boleta');
+    const trabajadorInput = document.getElementById('idTrabajador');
+
+    boxes.forEach(box => {
+        box.addEventListener('click', () => {
+            // UI
+            boxes.forEach(b => b.classList.remove('role-selected'));
+            box.classList.add('role-selected');
+
+            // Rol seleccionado
+            const rol = box.dataset.role;
+            rolInput.value = rol;
+
+            // Resetear campos
+            boletaGroup.classList.remove('show');
+            trabajadorGroup.classList.remove('show');
+            boletaInput.required = false;
+            trabajadorInput.required = false;
+
+            // Mostrar según rol
+            if (rol === 'USUARIO') {
+                boletaGroup.classList.add('show');
+                boletaInput.required = true;
+            } else if (rol === 'ADMIN' || rol === 'TECNICO') {
+                trabajadorGroup.classList.add('show');
+                trabajadorInput.required = true;
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

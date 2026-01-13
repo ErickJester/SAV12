@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Ticket - Técnico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #0ea5e9;
+            --light-bg: #f8fafc;
+            --border-light: #e2e8f0;
+        }
+
+        body {
+            background: var(--light-bg);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .header-tech {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .header-tech h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-tech p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-badge.ABIERTO {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .status-badge.EN_PROCESO {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .status-badge.RESUELTO {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-badge.CERRADO {
+            background: #6b7280;
+            color: white;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-badge.ALTA {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .priority-badge.MEDIA {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-badge.BAJA {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .info-box strong {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .info-box span {
+            display: block;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .card-custom {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6b35;
+            color: #1e293b;
+        }
+
+        .form-section {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .form-section label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #1e293b;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .form-control:focus {
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-primary-custom {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            background: #e55a25;
+        }
+
+        .btn-success-custom {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success-custom:hover {
+            background: #059669;
+        }
+
+        .btn-secondary-custom {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary-custom:hover {
+            background: #475569;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .comment-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .comment-header strong {
+            color: #1e293b;
+        }
+
+        .comment-date {
+            color: #64748b;
+        }
+
+        .comment-content {
+            color: #475569;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .comment-role {
+            display: inline-block;
+            background: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+
+        .evidence-section {
+            margin: 20px 0;
+        }
+
+        .evidence-section img {
+            max-width: 100%;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: #ff6b35;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #ff6b35;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+
+        .timeline-action {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .timeline-user {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .info-panel {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .info-panel h4 {
+            margin: 0 0 10px 0;
+            color: #0369a1;
+            font-size: 13px;
+        }
+
+        .info-panel p {
+            margin: 0;
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <!-- Header -->
+        <div class="header-tech">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <h1>Detalle del Ticket #<span th:text="${ticket.id}">1</span></h1>
+                    <p>Creado por <strong th:text="${ticket.usuario.nombre}">Usuario</strong> el <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+                </div>
+                <div>
+                    <span class="status-badge" th:classappend="${ticket.estado.name()}" 
+                          th:text="${ticket.estado}">Estado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <div style="margin-bottom: 25px;">
+            <a th:href="@{/tecnico/panel}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-house"></i> Panel Principal
+            </a>
+            <a th:href="@{/tecnico/mis-tickets}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-list-check"></i> Mis Tickets
+            </a>
+            <a th:href="@{/logout}" class="btn btn-danger btn-sm" style="float: right;">
+                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </a>
+        </div>
+
+        <!-- Alerta de éxito -->
+        <div th:if="${param.success == 'estadocambiado'}" class="alert-success">
+            <i class="bi bi-check-circle"></i> Estado del ticket actualizado exitosamente
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+            <!-- Contenido Principal -->
+            <div>
+                <!-- Información General -->
+                <div class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-info-circle"></i> Información General
+                    </h3>
+                    <h4 style="margin-bottom: 15px; color: #1e293b;" th:text="${ticket.titulo}">Título del Ticket</h4>
+                    
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <strong>Usuario Reportante</strong>
+                            <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                        </div>
+                        <div class="info-box">
+                            <strong>Categoría</strong>
+                            <span th:text="${ticket.categoria?.nombre}">N/A</span>
+                        </div>
+                        <div class="info-box">
+                            <strong>Ubicación</strong>
+                            <span th:if="${ticket.ubicacion != null}" 
+                                  th:text="${ticket.ubicacion.edificio + ' - Piso ' + ticket.ubicacion.piso + ' - ' + ticket.ubicacion.salon}">N/A</span>
+                            <span th:if="${ticket.ubicacion == null}">No especificada</span>
+                        </div>
+                        <div class="info-box">
+                            <strong>Prioridad</strong>
+                            <span class="priority-badge" th:classappend="${ticket.prioridad.name()}"
+                                  th:text="${ticket.prioridad}">Media</span>
+                        </div>
+                        <div class="info-box">
+                            <strong>Creado</strong>
+                            <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                        </div>
+                        <div class="info-box">
+                            <strong>Última Actualización</strong>
+                            <span th:text="${ticket.fechaActualizacion != null ? #temporals.format(ticket.fechaActualizacion, 'dd/MM/yyyy HH:mm') : 'Sin actualizar'}">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción y Evidencia -->
+                <div class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-file-text"></i> Descripción del Problema
+                    </h3>
+                    <p th:text="${ticket.descripcion}" style="color: #475569; line-height: 1.6; margin: 0;">Descripción del problema</p>
+                </div>
+
+                <!-- Evidencia -->
+                <div th:if="${ticket.evidencia != null and !ticket.evidencia.isEmpty()}" class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-image"></i> Evidencia Adjunta
+                    </h3>
+                    <div class="evidence-section">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidencia})}" 
+                             alt="Evidencia del ticket">
+                    </div>
+                </div>
+
+                <!-- Cambiar Estado -->
+                <div class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-arrow-repeat"></i> Cambiar Estado del Ticket
+                    </h3>
+                    <form th:action="@{/tecnico/ticket/{id}/cambiar-estado(id=${ticket.id})}" method="post">
+                        <div class="form-section">
+                            <label for="nuevoEstado">Nuevo Estado:</label>
+                            <select name="nuevoEstado" id="nuevoEstado" class="form-control" required>
+                                <option value="">-- Seleccione un estado --</option>
+                                <option th:each="estado : ${estados}" 
+                                        th:value="${estado.name()}" 
+                                        th:text="${estado}"
+                                        th:selected="${ticket.estado == estado}">Estado</option>
+                            </select>
+                            
+                            <label for="observaciones" style="margin-top: 15px;">Observaciones / Notas Técnicas:</label>
+                            <textarea name="observaciones" id="observaciones" rows="4" class="form-control" 
+                                      placeholder="Describe las acciones realizadas o razón del cambio de estado..."></textarea>
+                            
+                            <button type="submit" class="btn-action btn-primary-custom" style="width: 100%;">
+                                <i class="bi bi-check-lg"></i> Actualizar Estado
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Botón de Asignación -->
+                <div th:if="${ticket.tecnico == null}" class="card-custom" style="background: #fffbeb;">
+                    <form th:action="@{/tecnico/ticket/{id}/asignar(id=${ticket.id})}" method="post">
+                        <button type="submit" class="btn-action btn-success-custom" style="width: 100%;">
+                            <i class="bi bi-hand-thumbs-up"></i> Asignarme este Ticket
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Comentarios -->
+                <div class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-chat-left-dots"></i> Comentarios y Comunicación
+                    </h3>
+                    
+                    <div th:if="${not #lists.isEmpty(comentarios)}">
+                        <div th:each="comentario : ${comentarios}" class="comment-box">
+                            <div class="comment-header">
+                                <div>
+                                    <strong th:text="${comentario.usuario.nombre}">Usuario</strong>
+                                    <span class="comment-role" th:text="${comentario.usuario.rol}">USUARIO</span>
+                                </div>
+                                <span class="comment-date" th:text="${#temporals.format(comentario.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                            </div>
+                            <p class="comment-content" th:text="${comentario.contenido}">Contenido del comentario</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(comentarios)}" style="background: #f0fdf4; border: 1px dashed #86efac; padding: 20px; border-radius: 6px; text-align: center; color: #166534;">
+                        <i class="bi bi-chat-left-text" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                        <p style="margin: 0;">No hay comentarios aún. Sé el primero en añadir uno.</p>
+                    </div>
+
+                    <!-- Agregar Comentario -->
+                    <div th:if="${ticket.estado.name() != 'CERRADO'}" style="background: #f8f8f8; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #1e293b;">Enviar Comentario al Usuario</h4>
+                        <form th:action="@{/tecnico/ticket/{id}/comentar(id=${ticket.id})}" method="post">
+                            <textarea name="contenido" rows="4" class="form-control" 
+                                      placeholder="Escribe un comentario para comunicarte con el usuario...  ej: Actualización de progreso, solicitud de información, etc." required></textarea>
+                            <button type="submit" class="btn-action btn-primary-custom" style="width: 100%;">
+                                <i class="bi bi-send"></i> Enviar Comentario
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div>
+                <!-- Información Técnica -->
+                <div class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-person-check"></i> Asignación
+                    </h3>
+                    <div class="info-box" style="margin-bottom: 10px;">
+                        <strong>Técnico Asignado</strong>
+                        <span th:text="${ticket.tecnico != null ? ticket.tecnico.nombre : 'Sin asignar aún'}">Sin asignar</span>
+                    </div>
+                    <div th:if="${ticket.tecnico != null}" class="info-panel">
+                        <p style="margin: 0; font-size: 13px; color: #475569;">
+                            <i class="bi bi-check-circle-fill" style="color: #10b981;"></i> Este ticket está asignado a ti
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Historial -->
+                <div class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-clock-history"></i> Historial de Acciones
+                    </h3>
+                    
+                    <div th:if="${not #lists.isEmpty(historial)}" class="timeline">
+                        <div class="timeline-item" th:each="h : ${historial}">
+                            <div class="timeline-date" th:text="${#temporals.format(h.fechaAccion, 'dd/MM HH:mm')}">Fecha</div>
+                            <div class="timeline-action" th:text="${h.accion}">Acción</div>
+                            <div class="timeline-user">
+                                <i class="bi bi-person-circle"></i>
+                                <span th:text="${h.usuario.nombre}">Usuario</span>
+                            </div>
+                            <div th:if="${h.detalles != null}" style="font-size: 12px; color: #64748b; margin-top: 5px; padding-top: 5px; border-top: 1px solid #e2e8f0;" th:text="${h.detalles}">Detalles</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(historial)}" style="text-align: center; padding: 20px; color: #666;">
+                        <p style="margin: 0; font-size: 13px;">Sin historial registrado</p>
+                    </div>
+                </div>
+
+                <!-- Info Panel -->
+                <div class="info-panel" style="background: #fef3c7; border-left-color: #f59e0b;">
+                    <h4 style="color: #92400e;">
+                        <i class="bi bi-lightbulb"></i> Consejos Técnicos
+                    </h4>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #92400e;">
+                        <li>Actualiza el estado del ticket regularmente</li>
+                        <li>Comunica con el usuario a través de comentarios</li>
+                        <li>Registra las acciones realizadas</li>
+                        <li>Marca como RESUELTO cuando la solución esté completa</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+/* Admin.css - Estilos para las vistas de administración */
+
+.admin-content {
+    margin-top: 2rem;
+}
+
+.users-table table,
+.admin-content table {
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-collapse: collapse;
+    overflow: hidden;
+}
+
+.users-table thead,
+.admin-content thead {
+    background-color: #6610f2;
+    color: white;
+}
+
+.users-table thead th,
+.admin-content thead th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.users-table tbody tr,
+.admin-content tbody tr {
+    border-bottom: 1px solid #dee2e6;
+    transition: background-color 0.2s ease;
+}
+
+.users-table tbody tr:hover,
+.admin-content tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.users-table tbody td,
+.admin-content tbody td {
+    padding: 1rem;
+    color: #495057;
+}
+
+.users-table tbody td:last-child,
+.admin-content tbody td:last-child {
+    text-align: center;
+}
+
+/* Formularios de creación en admin */
+.admin-content .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.admin-content h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #6610f2;
+}
+
+.admin-content form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}

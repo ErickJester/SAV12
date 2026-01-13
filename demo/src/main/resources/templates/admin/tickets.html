@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tickets - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7c3aed;
+            --light-bg: #f8fafc;
+            --border-light: #e2e8f0;
+        }
+
+        body {
+            background: var(--light-bg);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-section {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .header-section h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+        }
+
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table tbody tr:hover {
+            background: var(--light-bg);
+        }
+
+        .badge-estado {
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-abierto {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-en_proceso {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-resuelto {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-cerrado {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .badge-prioridad {
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-baja {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-media {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-alta {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .badge-urgente {
+            background: #fda2da;
+            color: #831843;
+        }
+
+        .form-inline-assign {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .form-inline-assign select {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            font-size: 13px;
+        }
+
+        .btn-assign-tecnico {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-assign-tecnico:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: none;
+            border-left: 4px solid #10b981;
+        }
+
+        @media (max-width: 768px) {
+            .table {
+                font-size: 13px;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: 10px;
+            }
+
+            .form-inline-assign {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-ticket-perforated"></i> Gestión de Tickets
+            </span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto">
+                    <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/admin/panel}" style="text-decoration: none;">
+                        <i class="bi bi-house-door"></i> Panel
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Tickets</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="header-section">
+            <h1><i class="bi bi-ticket-perforated"></i> Gestión de Tickets</h1>
+            <p class="text-muted mb-0">Supervisa y asigna técnicos a todos los tickets del sistema</p>
+        </div>
+
+        <!-- Filtros Rápidos -->
+        <div class="mb-3 d-flex gap-2 align-items-center">
+            <a th:href="@{/admin/tickets}" th:classappend="${filtro=='all' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'}" class="btn btn-outline-secondary btn-sm">Todos</a>
+            <a th:href="@{/admin/tickets(filtro='activo')}" th:classappend="${filtro=='activo' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'}" class="btn btn-outline-secondary btn-sm">Activos</a>
+            <a th:href="@{/admin/tickets(filtro='resuelto')}" th:classappend="${filtro=='resuelto' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'}" class="btn btn-outline-secondary btn-sm">Resueltos</a>
+            <div class="ms-auto text-muted">Mostrando: <strong th:text="${filtro}">all</strong></div>
+        </div>
+
+        <!-- Alerta de éxito -->
+        <div th:if="${param.success == 'assigned'}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <strong>¡Éxito!</strong> Técnico asignado correctamente al ticket.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Tabla de Tickets -->
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-hash"></i> ID</th>
+                        <th><i class="bi bi-chat-left-text"></i> Título</th>
+                        <th><i class="bi bi-person"></i> Usuario</th>
+                        <th><i class="bi bi-info-circle"></i> Estado</th>
+                        <th><i class="bi bi-exclamation-triangle"></i> Prioridad</th>
+                        <th><i class="bi bi-person-gear"></i> Técnico</th>
+                        <th><i class="bi bi-calendar-event"></i> Creación</th>
+                        <th><i class="bi bi-gear"></i> Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ticket : ${tickets}">
+                        <td><strong th:text="${ticket.id}">1</strong></td>
+                        <td th:text="${ticket.titulo}">Título</td>
+                        <td th:text="${ticket.usuario.nombre}">Usuario</td>
+                        <td>
+                            <span class="badge-estado" th:classappend="${'badge-' + ticket.estado.name().toLowerCase()}" th:text="${ticket.estado}">Estado</span>
+                        </td>
+                        <td>
+                            <span class="badge-prioridad" th:classappend="${'badge-' + ticket.prioridad.name().toLowerCase()}" th:text="${ticket.prioridad}">Prioridad</span>
+                        </td>
+                        <td>
+                            <span th:if="${ticket.tecnico != null}" class="badge bg-light text-dark">
+                                <i class="bi bi-person-check"></i> <span th:text="${ticket.tecnico.nombre}">Técnico</span>
+                            </span>
+                            <span th:if="${ticket.tecnico == null}" class="badge bg-secondary">
+                                <i class="bi bi-dash-lg"></i> Sin asignar
+                            </span>
+                        </td>
+                        <td>
+                            <small th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
+                        </td>
+                        <td>
+                            <!-- Asignar técnico -->
+                            <form th:action="@{/admin/tickets/{id}/asignar-tecnico(id=${ticket.id})}" method="post" class="form-inline-assign">
+                                <select name="tecnicoId" class="form-select form-select-sm" required>
+                                    <option value="">Asignar...</option>
+                                    <option th:each="tec : ${tecnicos}" 
+                                            th:value="${tec.id}" 
+                                            th:text="${tec.nombre}"
+                                            th:selected="${ticket.tecnico != null && ticket.tecnico.id == tec.id}">
+                                        Técnico
+                                    </option>
+                                </select>
+                                <button type="submit" class="btn-assign-tecnico">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

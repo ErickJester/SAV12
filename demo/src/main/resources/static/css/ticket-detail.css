@@ -1,0 +1,232 @@
+/* Ticket-detail.css - Estilos para la vista de detalle de ticket */
+
+.ticket-detail {
+    margin-top: 2rem;
+}
+
+.ticket-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.ticket-card .ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 1.5rem;
+}
+
+.ticket-card .ticket-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.ticket-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.ticket-meta p {
+    margin: 0.5rem 0;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.ticket-meta strong {
+    color: #333;
+}
+
+.ticket-description,
+.ticket-evidence {
+    margin-bottom: 2rem;
+}
+
+.ticket-description h3,
+.ticket-evidence h3 {
+    color: #333;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+.ticket-description p,
+.ticket-evidence p {
+    color: #495057;
+    line-height: 1.6;
+}
+
+.ticket-evidence .evidence-image {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.ticket-evidence .evidence-image img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.ticket-evidence .evidence-image img:hover {
+    transform: scale(1.02);
+}
+
+.change-state-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.change-state-section h3 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+/* Comentarios */
+.comments-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.comments-section h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+.comments-list {
+    margin-bottom: 2rem;
+}
+
+.comment {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #007bff;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.comment-header strong {
+    color: #333;
+}
+
+.comment-date {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.comment p {
+    margin: 0;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.no-comments {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.add-comment {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.add-comment h4 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+/* Historial */
+.historial-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.historial-section h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.historial-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.historial-item {
+    padding: 1rem;
+    border-left: 3px solid #007bff;
+    background: #f8f9fa;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+.historial-action {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.historial-user {
+    color: #007bff;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.historial-date {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.historial-details {
+    color: #495057;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Responsivo */
+@media (max-width: 992px) {
+    .historial-section {
+        position: static;
+        margin-top: 2rem;
+    }
+}
