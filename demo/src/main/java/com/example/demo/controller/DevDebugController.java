@@ -8,9 +8,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.context.annotation.Profile;
+
 import com.example.demo.entity.Usuario;
 import com.example.demo.repository.UsuarioRepository;
 
+@Profile("dev")
 @RestController
 public class DevDebugController {
 
