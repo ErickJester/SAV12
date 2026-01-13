@@ -1,0 +1,10 @@
+{
+  "appId": "com.example.app",
+  "appName": "SAV12",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
