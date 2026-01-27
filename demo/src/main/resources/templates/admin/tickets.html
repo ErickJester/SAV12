@@ -71,6 +71,16 @@
             background: var(--light-bg);
         }
 
+        .ticket-link {
+            color: #4c1d95;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .ticket-link:hover {
+            text-decoration: underline;
+        }
+
         .badge-estado {
             font-size: 12px;
             padding: 6px 12px;
@@ -252,8 +262,14 @@
                 </thead>
                 <tbody>
                     <tr th:each="ticket : ${tickets}">
-                        <td><strong th:text="${ticket.id}">1</strong></td>
-                        <td th:text="${ticket.titulo}">Título</td>
+                        <td>
+                            <a class="ticket-link" th:href="@{/admin/ticket/{id}(id=${ticket.id})}">
+                                <strong th:text="${ticket.id}">1</strong>
+                            </a>
+                        </td>
+                        <td>
+                            <a class="ticket-link" th:href="@{/admin/ticket/{id}(id=${ticket.id})}" th:text="${ticket.titulo}">Título</a>
+                        </td>
                         <td th:text="${ticket.usuario.nombre}">Usuario</td>
                         <td>
                             <span class="badge-estado" th:classappend="${'badge-' + ticket.estado.name().toLowerCase()}" th:text="${ticket.estado}">Estado</span>

@@ -103,6 +103,10 @@ public class TicketService {
         return cambiarEstado(ticketId, EstadoTicket.REABIERTO, usuario, "Ticket reabierto por el usuario");
     }
 
+    public Ticket reabrirTicketComoAdmin(Long ticketId, Usuario admin) {
+        return cambiarEstado(ticketId, EstadoTicket.REABIERTO, admin, "Ticket reabierto por el administrador");
+    }
+
     public List<Ticket> obtenerTicketsDeUsuario(Usuario usuario) {
         return ticketRepository.findByUsuarioOrderByFechaCreacionDesc(usuario);
     }
