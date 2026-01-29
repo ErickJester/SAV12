@@ -357,7 +357,7 @@
             <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div>
                     <h1>Detalle del Ticket #<span th:text="${ticket.id}">1</span></h1>
-                    <p>Creado por <strong th:text="${ticket.usuario.nombre}">Usuario</strong> el <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+                    <p>Creado por <strong th:text="${ticket.creadoPor.nombre}">Usuario</strong> el <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
                 </div>
                 <div>
                     <span class="status-badge" th:classappend="${ticket.estado.name()}" 
@@ -397,7 +397,7 @@
                     <div class="info-grid">
                         <div class="info-box">
                             <strong>Usuario Reportante</strong>
-                            <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                            <span th:text="${ticket.creadoPor.nombre}">Usuario</span>
                         </div>
                         <div class="info-box">
                             <strong>Categoría</strong>
@@ -434,12 +434,12 @@
                 </div>
 
                 <!-- Evidencia -->
-                <div th:if="${ticket.evidencia != null and !ticket.evidencia.isEmpty()}" class="card-custom">
+                <div th:if="${ticket.evidenciaProblema != null and !ticket.evidenciaProblema.isEmpty()}" class="card-custom">
                     <h3 class="card-title">
                         <i class="bi bi-image"></i> Evidencia Adjunta
                     </h3>
                     <div class="evidence-section">
-                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidencia})}" 
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaProblema})}" 
                              alt="Evidencia del ticket">
                     </div>
                 </div>
@@ -472,7 +472,7 @@
                 </div>
 
                 <!-- Botón de Asignación -->
-                <div th:if="${ticket.tecnico == null}" class="card-custom" style="background: #fffbeb;">
+                <div th:if="${ticket.asignadoA == null}" class="card-custom" style="background: #fffbeb;">
                     <form th:action="@{/tecnico/ticket/{id}/asignar(id=${ticket.id})}" method="post">
                         <button type="submit" class="btn-action btn-success-custom" style="width: 100%;">
                             <i class="bi bi-hand-thumbs-up"></i> Asignarme este Ticket
@@ -527,9 +527,9 @@
                     </h3>
                     <div class="info-box" style="margin-bottom: 10px;">
                         <strong>Técnico Asignado</strong>
-                        <span th:text="${ticket.tecnico != null ? ticket.tecnico.nombre : 'Sin asignar aún'}">Sin asignar</span>
+                        <span th:text="${ticket.asignadoA != null ? ticket.asignadoA.nombre : 'Sin asignar aún'}">Sin asignar</span>
                     </div>
-                    <div th:if="${ticket.tecnico != null}" class="info-panel">
+                    <div th:if="${ticket.asignadoA != null}" class="info-panel">
                         <p style="margin: 0; font-size: 13px; color: #475569;">
                             <i class="bi bi-check-circle-fill" style="color: #10b981;"></i> Este ticket está asignado a ti
                         </p>

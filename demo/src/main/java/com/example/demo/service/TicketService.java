@@ -31,9 +31,9 @@ public class TicketService {
         Ticket ticket = new Ticket();
         ticket.setTitulo(dto.getTitulo());
         ticket.setDescripcion(dto.getDescripcion());
-        ticket.setUsuario(usuario);
+        ticket.setCreadoPor(usuario);
         ticket.setEstado(EstadoTicket.ABIERTO);
-        ticket.setEvidencia(dto.getEvidencia());
+        ticket.setEvidenciaProblema(dto.getEvidenciaProblema());
 
         if (dto.getCategoriaId() != null) {
             Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElse(null);
@@ -88,7 +88,7 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
         
-        ticket.setTecnico(tecnico);
+        ticket.setAsignadoA(tecnico);
         ticket.setFechaActualizacion(LocalDateTime.now());
         
         Ticket savedTicket = ticketRepository.save(ticket);
@@ -104,11 +104,11 @@ public class TicketService {
     }
 
     public List<Ticket> obtenerTicketsDeUsuario(Usuario usuario) {
-        return ticketRepository.findByUsuarioOrderByFechaCreacionDesc(usuario);
+        return ticketRepository.findByCreadoPorOrderByFechaCreacionDesc(usuario);
     }
 
     public List<Ticket> obtenerTicketsDeTecnico(Usuario tecnico) {
-        return ticketRepository.findByTecnicoOrderByFechaCreacionDesc(tecnico);
+        return ticketRepository.findByAsignadoAOrderByFechaCreacionDesc(tecnico);
     }
 
     public List<Ticket> obtenerTodosLosTickets() {
