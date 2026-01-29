@@ -15,7 +15,7 @@ import com.example.demo.DTO.RegistroDTO;
 import com.example.demo.DTO.ReporteDTO;
 import com.example.demo.entity.Rol;
 import com.example.demo.entity.Usuario;
-import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -27,7 +27,7 @@ public class HomeController {
     // REPOSITORY
     // =========================
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
     @Autowired
     private com.example.demo.service.EmailService emailService;
@@ -61,7 +61,7 @@ public class HomeController {
 
         Usuario usuario = null;
         try {
-            usuario = usuarioRepository.findByCorreo(correo).orElse(null);
+            usuario = usuarioService.obtenerPorCorreo(correo);
         } catch (DataAccessException dae) {
             logger.error("DB error while finding user by correo: {}", dae.getMessage());
             model.addAttribute("mensaje", "Error de conexión a la base de datos. Intenta de nuevo más tarde.");
@@ -127,7 +127,7 @@ public class HomeController {
     public String procesarRegistro(@ModelAttribute RegistroDTO registro, Model model) {
 
         // Validar correo duplicado
-        if (usuarioRepository.existsByCorreo(registro.getCorreo())) {
+        if (usuarioService.existeCorreo(registro.getCorreo())) {
             model.addAttribute("mensaje", "El correo ya está registrado.");
             model.addAttribute("registro", registro);
             return "registro";
@@ -170,7 +170,7 @@ public class HomeController {
         }
 
         try {
-            usuarioRepository.save(usuario);
+            usuarioService.guardarUsuario(usuario);
             // Enviar correo de bienvenida tras registro exitoso
             emailService.sendWelcomeEmail(usuario);
         } catch (DataAccessException dae) {
@@ -180,8 +180,7 @@ public class HomeController {
             return "registro";
         }
 
-        model.addAttribute("mensaje", "Cuenta creada con éxito. Inicia sesión.");
-        return "login";
+        return "redirect:/login?registro=success";
     }
 
     // =========================

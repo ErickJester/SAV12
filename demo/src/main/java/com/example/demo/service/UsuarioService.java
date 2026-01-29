@@ -18,6 +18,10 @@ public class UsuarioService {
         return usuarioRepository.findByCorreo(correo).orElse(null);
     }
 
+    public boolean existeCorreo(String correo) {
+        return usuarioRepository.existsByCorreo(correo);
+    }
+
     public Usuario obtenerPorId(Long id) {
         return usuarioRepository.findById(id).orElse(null);
     }
