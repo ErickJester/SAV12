@@ -307,8 +307,8 @@
                             <small th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
                         </td>
                         <td>
-                            <span th:if="${ticket.tecnico != null}" th:text="${ticket.tecnico.nombre}">Técnico</span>
-                            <span th:if="${ticket.tecnico == null}" class="badge bg-secondary">Sin asignar</span>
+                            <span th:if="${ticket.asignadoA != null}" th:text="${ticket.asignadoA.nombre}">Técnico</span>
+                            <span th:if="${ticket.asignadoA == null}" class="badge bg-secondary">Sin asignar</span>
                         </td>
                         <td>
                             <a th:href="@{/usuario/ticket/{id}(id=${ticket.id})}" class="btn-action">

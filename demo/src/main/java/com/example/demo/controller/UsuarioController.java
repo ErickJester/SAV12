@@ -78,7 +78,7 @@ public class UsuarioController {
             // Guardar archivo si existe
             if (archivo != null && !archivo.isEmpty()) {
                 String nombreArchivo = fileStorageService.guardarArchivo(archivo);
-                ticketDTO.setEvidencia(nombreArchivo);
+                ticketDTO.setEvidenciaProblema(nombreArchivo);
             }
             
             ticketService.crearTicket(ticketDTO, usuario);
@@ -114,7 +114,7 @@ public class UsuarioController {
         }
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
-        if (ticket == null || !ticket.getUsuario().getId().equals(usuario.getId())) {
+        if (ticket == null || !ticket.getCreadoPor().getId().equals(usuario.getId())) {
             return "redirect:/usuario/mis-tickets?error=notfound";
         }
 
@@ -155,7 +155,7 @@ public class UsuarioController {
         }
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
-        if (ticket != null && ticket.getUsuario().getId().equals(usuario.getId())) {
+        if (ticket != null && ticket.getCreadoPor().getId().equals(usuario.getId())) {
             if (ticket.getEstado() == EstadoTicket.CERRADO || ticket.getEstado() == EstadoTicket.RESUELTO) {
                 ticketService.reabrirTicket(id, usuario);
             }

@@ -347,7 +347,7 @@
                                     <h4 th:text="${ticket.titulo}">Título del ticket</h4>
                                     <p class="ticket-info mb-0">
                                         <strong>ID:</strong> <span th:text="${ticket.id}">1</span> |
-                                        <strong>Usuario:</strong> <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                                        <strong>Usuario:</strong> <span th:text="${ticket.creadoPor.nombre}">Usuario</span>
                                     </p>
                                 </div>
                                 <span class="badge-priority" th:classappend="${'badge-' + ticket.prioridad.name().toLowerCase()}" th:text="${ticket.prioridad}">Prioridad</span>
@@ -381,7 +381,7 @@
                                     <h4 th:text="${ticket.titulo}">Título del ticket</h4>
                                     <p class="ticket-info mb-0">
                                         <strong>ID:</strong> <span th:text="${ticket.id}">1</span> |
-                                        <strong>Usuario:</strong> <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                                        <strong>Usuario:</strong> <span th:text="${ticket.creadoPor.nombre}">Usuario</span>
                                     </p>
                                 </div>
                                 <span class="badge-status" th:classappend="${'badge-' + ticket.estado.name().toLowerCase()}" th:text="${ticket.estado}">Estado</span>

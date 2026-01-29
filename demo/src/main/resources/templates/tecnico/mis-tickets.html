@@ -281,7 +281,7 @@
                             <strong th:text="${ticket.titulo}">Título</strong>
                         </td>
                         <td>
-                            <i class="bi bi-person-circle"></i> <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                            <i class="bi bi-person-circle"></i> <span th:text="${ticket.creadoPor.nombre}">Usuario</span>
                         </td>
                         <td>
                             <span class="badge-estado" th:classappend="${'badge-' + ticket.estado.name().toLowerCase()}" 
