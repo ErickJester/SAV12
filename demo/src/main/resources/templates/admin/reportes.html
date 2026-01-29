@@ -351,64 +351,58 @@
             </ol>
         </nav>
 
-        <!-- Resumen General -->
-        <form method="get" th:action="@{/admin/reportes}" class="row g-2 align-items-center mb-3">
-            <div class="col-auto">
-                <select name="periodo" class="form-select form-select-sm" onchange="toggleCustom(this.value)">
-                    <option value="">Último</option>
-                    <option value="semanal" th:selected="${periodoSeleccionado=='semanal'}">Última semana</option>
-                    <option value="mensual" th:selected="${periodoSeleccionado=='mensual'}">Último mes</option>
-                    <option value="custom" th:selected="${periodoSeleccionado=='custom'}">Personalizado</option>
+        <!-- Selector de periodo -->
+        <div class="row g-3 align-items-end mb-4">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="periodSelector">Periodo del reporte</label>
+                <select id="periodSelector" class="form-select"
+                        th:attr="data-initial-period=${periodoSeleccionado != null ? periodoSeleccionado : 'semanal'}">
+                    <option value="semanal">Reporte semanal</option>
+                    <option value="mensual">Reporte mensual</option>
+                    <option value="trimestral">Reporte trimestral</option>
                 </select>
             </div>
-            <div class="col-auto" id="customFrom" th:if="${periodoSeleccionado=='custom'}">
-                <input type="date" name="desde" class="form-control form-control-sm" th:value="${desde}" required>
+            <div class="col-md-8">
+                <div id="reportStatus" class="alert alert-info mb-0 d-none" role="status"></div>
             </div>
-            <div class="col-auto" id="customTo" th:if="${periodoSeleccionado=='custom'}">
-                <input type="date" name="hasta" class="form-control form-control-sm" th:value="${hasta}" required>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-outline-primary btn-sm" type="submit">Aplicar</button>
-                <a th:href="@{/admin/reportes}" class="btn btn-outline-secondary btn-sm">Reiniciar</a>
-            </div>
-        </form>
+        </div>
 
         <h2 class="section-title"><i class="bi bi-graph-up me-2"></i>Resumen General</h2>
         <div class="row">
             <div class="col-md-4 col-lg-2">
                 <div class="stat-card">
                     <p>Total de Tickets</p>
-                    <h3 th:text="${reporteGeneral.totalTickets}">0</h3>
+                    <h3 id="totalTickets" th:text="${reporteGeneral.totalTickets}">0</h3>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
                 <div class="stat-card abierto">
                     <p>Abiertos</p>
-                    <h3 th:text="${reporteGeneral.ticketsAbiertos}">0</h3>
+                    <h3 id="ticketsAbiertos" th:text="${reporteGeneral.ticketsAbiertos}">0</h3>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
                 <div class="stat-card en_proceso">
                     <p>En Proceso</p>
-                    <h3 th:text="${reporteGeneral.ticketsEnProceso}">0</h3>
+                    <h3 id="ticketsEnProceso" th:text="${reporteGeneral.ticketsEnProceso}">0</h3>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
                 <div class="stat-card resuelto">
                     <p>Resueltos</p>
-                    <h3 th:text="${reporteGeneral.ticketsResueltos}">0</h3>
+                    <h3 id="ticketsResueltos" th:text="${reporteGeneral.ticketsResueltos}">0</h3>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
                 <div class="stat-card cerrado">
                     <p>Cerrados</p>
-                    <h3 th:text="${reporteGeneral.ticketsCerrados}">0</h3>
+                    <h3 id="ticketsCerrados" th:text="${reporteGeneral.ticketsCerrados}">0</h3>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
                 <div class="stat-card">
                     <p>Reabiertos</p>
-                    <h3 th:text="${reporteGeneral.ticketsReabiertos}">0</h3>
+                    <h3 id="ticketsReabiertos" th:text="${reporteGeneral.ticketsReabiertos}">0</h3>
                 </div>
             </div>
         </div>
@@ -419,7 +413,7 @@
             <div class="col-lg-6">
                 <div class="sla-card">
                     <h4 class="mb-3"><i class="bi bi-percent"></i> Cumplimiento General</h4>
-                    <div class="sla-percentage" th:text="${reporteSLA.porcentajeCumplimiento + '%'}">0%</div>
+                    <div id="slaPorcentaje" class="sla-percentage" th:text="${reporteSLA.porcentajeCumplimiento + '%'}">0%</div>
                     <p class="mb-0">Porcentaje de tickets resueltos dentro del tiempo SLA</p>
                 </div>
             </div>
@@ -427,13 +421,13 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <div class="sla-detail-card success">
-                            <h4 th:text="${reporteSLA.ticketsCumplenSLA}">0</h4>
+                            <h4 id="slaCumplen" th:text="${reporteSLA.ticketsCumplenSLA}">0</h4>
                             <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <div class="sla-detail-card warning">
-                            <h4 th:text="${reporteSLA.ticketsIncumplenSLA}">0</h4>
+                            <h4 id="slaIncumplen" th:text="${reporteSLA.ticketsIncumplenSLA}">0</h4>
                             <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
                         </div>
                     </div>
@@ -451,7 +445,7 @@
                         <th><i class="bi bi-calculator"></i> Cantidad de Tickets</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="estado-table-body">
                     <tr th:each="entry : ${reportePorEstado}">
                         <td>
                             <span class="badge" 
@@ -489,20 +483,95 @@
             alert('Funcionalidad de exportación a CSV en desarrollo');
             // Aquí se implementaría la exportación real
         }
-        function toggleCustom(value) {
-            try {
-                var from = document.getElementById('customFrom');
-                var to = document.getElementById('customTo');
-                if (!from || !to) return;
-                if (value === 'custom') {
-                    from.style.display = 'inline-block';
-                    to.style.display = 'inline-block';
-                } else {
-                    from.style.display = 'none';
-                    to.style.display = 'none';
-                }
-            } catch(e) { /* no-op */ }
+        function buildReporteUrl(periodo) {
+            if (periodo === 'mensual' || periodo === 'semanal') {
+                return `/admin/reportes?periodo=${periodo}`;
+            }
+            if (periodo === 'trimestral') {
+                var hoy = new Date();
+                var hasta = hoy.toISOString().split('T')[0];
+                var desdeDate = new Date(hoy);
+                desdeDate.setMonth(hoy.getMonth() - 3);
+                var desde = desdeDate.toISOString().split('T')[0];
+                return `/admin/reportes?periodo=custom&desde=${desde}&hasta=${hasta}`;
+            }
+            return '/admin/reportes';
         }
+
+        function updateReportData(doc) {
+            var mapping = [
+                ['totalTickets', 'totalTickets'],
+                ['ticketsAbiertos', 'ticketsAbiertos'],
+                ['ticketsEnProceso', 'ticketsEnProceso'],
+                ['ticketsResueltos', 'ticketsResueltos'],
+                ['ticketsCerrados', 'ticketsCerrados'],
+                ['ticketsReabiertos', 'ticketsReabiertos'],
+                ['slaPorcentaje', 'slaPorcentaje'],
+                ['slaCumplen', 'slaCumplen'],
+                ['slaIncumplen', 'slaIncumplen']
+            ];
+            mapping.forEach(function(pair) {
+                var target = document.getElementById(pair[0]);
+                var source = doc.getElementById(pair[1]);
+                if (target && source) {
+                    target.textContent = source.textContent;
+                }
+            });
+
+            var tableTarget = document.getElementById('estado-table-body');
+            var tableSource = doc.getElementById('estado-table-body');
+            if (tableTarget && tableSource) {
+                tableTarget.innerHTML = tableSource.innerHTML;
+            }
+        }
+
+        function setStatus(message, type) {
+            var status = document.getElementById('reportStatus');
+            if (!status) return;
+            status.textContent = message;
+            status.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
+            status.classList.add(type);
+        }
+
+        function clearStatus() {
+            var status = document.getElementById('reportStatus');
+            if (!status) return;
+            status.textContent = '';
+            status.classList.add('d-none');
+        }
+
+        function loadReporte(periodo) {
+            var url = buildReporteUrl(periodo);
+            setStatus('Cargando reporte...', 'alert-info');
+            fetch(url)
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Respuesta inválida');
+                    }
+                    return response.text();
+                })
+                .then(function(html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    updateReportData(doc);
+                    setStatus('Reporte actualizado.', 'alert-success');
+                    setTimeout(clearStatus, 2000);
+                })
+                .catch(function() {
+                    setStatus('No se pudo cargar el reporte. Intenta nuevamente.', 'alert-danger');
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var selector = document.getElementById('periodSelector');
+            if (!selector) return;
+            var initial = selector.dataset.initialPeriod || 'semanal';
+            selector.value = initial;
+            loadReporte(initial);
+            selector.addEventListener('change', function(event) {
+                loadReporte(event.target.value);
+            });
+        });
     </script>
 </body>
 </html>
