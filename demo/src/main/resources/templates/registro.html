@@ -203,23 +203,21 @@
                     Alumno
                 </div>
                 <div class="role-box" data-role="DOCENTE">
-                    <i class="bi bi-person-badge role-box-icon"></i>
+                    <i class="bi bi-easel2 role-box-icon"></i>
                     Docente
                 </div>
                 <div class="role-box" data-role="ADMINISTRATIVO">
                     <i class="bi bi-briefcase role-box-icon"></i>
                     Administrativo
                 </div>
-                <!--
-                <div class="role-box" data-role="ADMIN">
-                    <i class="bi bi-shield-lock role-box-icon"></i>
-                    Administrador
-                </div>
                 <div class="role-box" data-role="TECNICO">
                     <i class="bi bi-tools role-box-icon"></i>
                     Técnico
                 </div>
-                -->
+                <div class="role-box" data-role="ADMIN">
+                    <i class="bi bi-shield-lock role-box-icon"></i>
+                    Admin
+                </div>
             </div>
 
             <!-- FORMULARIO -->
@@ -254,7 +252,7 @@
                     <small class="text-muted">Tu número de boleta ESCOM</small>
                 </div>
 
-                <!-- SOLO DOCENTE / ADMINISTRATIVO -->
+                <!-- SOLO DOCENTE / ADMINISTRATIVO / TECNICO / ADMIN -->
                 <div class="form-group hidden-group" id="trabajador-group">
                     <label><i class="bi bi-hash"></i> ID de trabajador</label>
                     <input type="text" th:field="*{idTrabajador}" class="form-control" id="idTrabajador" placeholder="ID del trabajador">
@@ -302,7 +300,7 @@
             if (rol === 'ALUMNO') {
                 boletaGroup.classList.add('show');
                 boletaInput.required = true;
-            } else if (rol === 'DOCENTE' || rol === 'ADMINISTRATIVO' || rol === 'ADMIN' || rol === 'TECNICO') {
+            } else if (['DOCENTE', 'ADMINISTRATIVO', 'TECNICO', 'ADMIN'].includes(rol)) {
                 trabajadorGroup.classList.add('show');
                 trabajadorInput.required = true;
             }

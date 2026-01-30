@@ -433,14 +433,25 @@
                     <p th:text="${ticket.descripcion}" style="color: #475569; line-height: 1.6; margin: 0;">Descripción del problema</p>
                 </div>
 
-                <!-- Evidencia -->
+                <!-- Evidencia del Problema -->
                 <div th:if="${ticket.evidenciaProblema != null and !ticket.evidenciaProblema.isEmpty()}" class="card-custom">
                     <h3 class="card-title">
-                        <i class="bi bi-image"></i> Evidencia Adjunta
+                        <i class="bi bi-image"></i> Evidencia del Problema
                     </h3>
                     <div class="evidence-section">
                         <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaProblema})}" 
-                             alt="Evidencia del ticket">
+                             alt="Evidencia del problema">
+                    </div>
+                </div>
+
+                <!-- Evidencia de Resolución -->
+                <div th:if="${ticket.evidenciaResolucion != null and !ticket.evidenciaResolucion.isEmpty()}" class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-check2-circle"></i> Evidencia de Resolución
+                    </h3>
+                    <div class="evidence-section">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaResolucion})}" 
+                             alt="Evidencia de resolución">
                     </div>
                 </div>
 
@@ -464,8 +475,9 @@
                             <textarea name="observaciones" id="observaciones" rows="4" class="form-control" 
                                       placeholder="Describe las acciones realizadas o razón del cambio de estado..."></textarea>
 
-                            <label for="evidenciaResolucion" style="margin-top: 15px;">Evidencia de resolución (opcional):</label>
-                            <input type="file" name="evidenciaResolucion" id="evidenciaResolucion" class="form-control" accept="image/*">
+                            <label for="evidenciaResolucion" style="margin-top: 15px;">Evidencia de Resolución (opcional):</label>
+                            <input type="file" id="evidenciaResolucion" name="archivoEvidenciaResolucion" class="form-control" accept="image/*">
+                            <small style="display: block; margin-top: 6px; color: #64748b;">Adjunta evidencia cuando marques el ticket como RESUELTO o CERRADO.</small>
                             
                             <button type="submit" class="btn-action btn-primary-custom" style="width: 100%;">
                                 <i class="bi bi-check-lg"></i> Actualizar Estado
