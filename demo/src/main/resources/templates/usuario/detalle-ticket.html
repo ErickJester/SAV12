@@ -340,12 +340,21 @@
                     <p th:text="${ticket.descripcion}" style="color: #475569; line-height: 1.6; margin: 0;">Descripción del problema</p>
                 </div>
 
-                <!-- Evidencia -->
+                <!-- Evidencia del Problema -->
                 <div th:if="${ticket.evidenciaProblema != null and !ticket.evidenciaProblema.isEmpty()}" class="section-card">
-                    <h3 class="section-title">Evidencia Adjunta</h3>
+                    <h3 class="section-title">Evidencia del Problema</h3>
                     <div class="evidence-image">
                         <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaProblema})}" 
-                             alt="Evidencia del ticket">
+                             alt="Evidencia del problema">
+                    </div>
+                </div>
+
+                <!-- Evidencia de Resolución -->
+                <div th:if="${ticket.evidenciaResolucion != null and !ticket.evidenciaResolucion.isEmpty()}" class="section-card">
+                    <h3 class="section-title">Evidencia de Resolución</h3>
+                    <div class="evidence-image">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaResolucion})}" 
+                             alt="Evidencia de resolución">
                     </div>
                 </div>
 

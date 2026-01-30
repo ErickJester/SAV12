@@ -100,9 +100,19 @@
             font-weight: 600;
         }
 
-        .badge-usuario {
+        .badge-alumno {
             background: #dbeafe;
             color: #1e40af;
+        }
+
+        .badge-docente {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-administrativo {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .badge-tecnico {
@@ -257,7 +267,7 @@
                         <td>
                             <span class="badge-rol" th:classappend="${'badge-' + u.rol.name().toLowerCase()}" th:text="${u.rol}">ROL</span>
                         </td>
-                        <td th:text="${u.boleta != null ? u.boleta : u.idTrabajador}">N/A</td>
+                        <td th:text="${u.rol.name() == 'ALUMNO' ? u.boleta : u.idTrabajador}">N/A</td>
                         <td>
                             <span th:if="${u.activo}" class="badge badge-activo">
                                 <i class="bi bi-check-circle"></i> Activo

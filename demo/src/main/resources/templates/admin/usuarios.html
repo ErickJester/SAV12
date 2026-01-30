@@ -81,9 +81,19 @@
             font-weight: 600;
         }
 
-        .badge-usuario {
+        .badge-alumno {
             background: #dbeafe;
             color: #1e40af;
+        }
+
+        .badge-docente {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-administrativo {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .badge-tecnico {
@@ -231,7 +241,7 @@
                         <td>
                             <span class="badge-rol" th:classappend="${'badge-' + u.rol.name().toLowerCase()}" th:text="${u.rol}">ROL</span>
                         </td>
-                        <td th:text="${u.boleta != null ? u.boleta : u.idTrabajador}">N/A</td>
+                        <td th:text="${u.rol.name() == 'ALUMNO' ? u.boleta : u.idTrabajador}">N/A</td>
                         <td>
                             <span th:if="${u.activo}" class="badge badge-activo">
                                 <i class="bi bi-check-circle"></i> Activo
@@ -253,7 +263,9 @@
                             <!-- Cambiar Rol -->
                             <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${u.id})}" method="post" style="display:inline;">
                                 <select name="rol" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                                    <option value="USUARIO" th:selected="${u.rol.name() == 'USUARIO'}">Usuario</option>
+                                    <option value="ALUMNO" th:selected="${u.rol.name() == 'ALUMNO'}">Alumno</option>
+                                    <option value="DOCENTE" th:selected="${u.rol.name() == 'DOCENTE'}">Docente</option>
+                                    <option value="ADMINISTRATIVO" th:selected="${u.rol.name() == 'ADMINISTRATIVO'}">Administrativo</option>
                                     <option value="TECNICO" th:selected="${u.rol.name() == 'TECNICO'}">Técnico</option>
                                     <option value="ADMIN" th:selected="${u.rol.name() == 'ADMIN'}">Admin</option>
                                 </select>
