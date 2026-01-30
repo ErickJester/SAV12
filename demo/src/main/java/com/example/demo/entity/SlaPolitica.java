@@ -10,17 +10,19 @@ public class SlaPolitica {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String nombre;
+    @Column(name = "rol_solicitante", nullable = false)
+    private String rolSolicitante;
 
-    private String descripcion;
+    @Column(name = "sla_primera_respuesta_min", nullable = false)
+    private Integer slaPrimeraRespuestaMin;
+
+    @Column(name = "sla_resolucion_min", nullable = false)
+    private Integer slaResolucionMin;
+
+    @Column(nullable = false)
+    private Boolean activo = Boolean.TRUE;
 
     public SlaPolitica() {}
-
-    public SlaPolitica(String nombre, String descripcion) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-    }
 
     public Long getId() {
         return id;
@@ -30,19 +32,35 @@ public class SlaPolitica {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getRolSolicitante() {
+        return rolSolicitante;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setRolSolicitante(String rolSolicitante) {
+        this.rolSolicitante = rolSolicitante;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public Integer getSlaPrimeraRespuestaMin() {
+        return slaPrimeraRespuestaMin;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setSlaPrimeraRespuestaMin(Integer slaPrimeraRespuestaMin) {
+        this.slaPrimeraRespuestaMin = slaPrimeraRespuestaMin;
+    }
+
+    public Integer getSlaResolucionMin() {
+        return slaResolucionMin;
+    }
+
+    public void setSlaResolucionMin(Integer slaResolucionMin) {
+        this.slaResolucionMin = slaResolucionMin;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }

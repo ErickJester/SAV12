@@ -388,6 +388,12 @@
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
+                <div class="stat-card">
+                    <p>En Espera</p>
+                    <h3 id="ticketsEnEspera" th:text="${reporteGeneral.ticketsEnEspera}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
                 <div class="stat-card resuelto">
                     <p>Resueltos</p>
                     <h3 id="ticketsResueltos" th:text="${reporteGeneral.ticketsResueltos}">0</h3>
@@ -399,10 +405,24 @@
                     <h3 id="ticketsCerrados" th:text="${reporteGeneral.ticketsCerrados}">0</h3>
                 </div>
             </div>
-            <div class="col-md-4 col-lg-2">
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4 col-lg-4">
+                <div class="stat-card resuelto">
+                    <p>Resueltos (Total)</p>
+                    <h3 id="ticketsResueltosTotal" th:text="${reporteGeneral.ticketsResueltosTotal}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-4">
                 <div class="stat-card">
-                    <p>Reabiertos</p>
-                    <h3 id="ticketsReabiertos" th:text="${reporteGeneral.ticketsReabiertos}">0</h3>
+                    <p>No Resueltos</p>
+                    <h3 id="ticketsNoResueltos" th:text="${reporteGeneral.ticketsNoResueltos}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-4">
+                <div class="stat-card">
+                    <p>Cancelados</p>
+                    <h3 id="ticketsCancelados" th:text="${reporteGeneral.ticketsCancelados}">0</h3>
                 </div>
             </div>
         </div>
@@ -410,27 +430,46 @@
         <!-- SLA Compliance -->
         <h2 class="section-title"><i class="bi bi-clock-history me-2"></i>Cumplimiento de SLA</h2>
         <div class="row mb-4">
-            <div class="col-lg-6">
+            <div class="col-lg-6 mb-3 mb-lg-0">
                 <div class="sla-card">
-                    <h4 class="mb-3"><i class="bi bi-percent"></i> Cumplimiento General</h4>
-                    <div id="slaPorcentaje" class="sla-percentage" th:text="${reporteSLA.porcentajeCumplimiento + '%'}">0%</div>
-                    <p class="mb-0">Porcentaje de tickets resueltos dentro del tiempo SLA</p>
+                    <h4 class="mb-3"><i class="bi bi-chat-dots"></i> SLA 1ª Respuesta</h4>
+                    <div id="slaPrimeraRespuestaPorcentaje" class="sla-percentage" th:text="${reporteSLA.slaPrimeraRespuestaPorcentaje + '%'}">0%</div>
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="sla-detail-card success">
+                                <h4 id="slaPrimeraRespuestaCumplen" th:text="${reporteSLA.slaPrimeraRespuestaCumplen}">0</h4>
+                                <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="sla-detail-card warning">
+                                <h4 id="slaPrimeraRespuestaIncumplen" th:text="${reporteSLA.slaPrimeraRespuestaIncumplen}">0</h4>
+                                <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mb-0">Basado en la primera respuesta registrada.</p>
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card success">
-                            <h4 id="slaCumplen" th:text="${reporteSLA.ticketsCumplenSLA}">0</h4>
-                            <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
+                <div class="sla-card">
+                    <h4 class="mb-3"><i class="bi bi-hourglass-split"></i> SLA Resolución</h4>
+                    <div id="slaResolucionPorcentaje" class="sla-percentage" th:text="${reporteSLA.slaResolucionPorcentaje + '%'}">0%</div>
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="sla-detail-card success">
+                                <h4 id="slaResolucionCumplen" th:text="${reporteSLA.slaResolucionCumplen}">0</h4>
+                                <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="sla-detail-card warning">
+                                <h4 id="slaResolucionIncumplen" th:text="${reporteSLA.slaResolucionIncumplen}">0</h4>
+                                <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card warning">
-                            <h4 id="slaIncumplen" th:text="${reporteSLA.ticketsIncumplenSLA}">0</h4>
-                            <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
-                        </div>
-                    </div>
+                    <p class="mb-0">Considera el tiempo efectivo de resolución.</p>
                 </div>
             </div>
         </div>
@@ -453,6 +492,27 @@
                                   th:text="${entry.key}">Estado</span>
                         </td>
                         <td class="fw-bold" th:text="${entry.value}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title"><i class="bi bi-tags me-2"></i>Top 5 Categorías</h2>
+        <div class="table-responsive mb-4">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-tag"></i> Categoría</th>
+                        <th><i class="bi bi-calculator"></i> Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody id="categorias-table-body">
+                    <tr th:if="${#lists.isEmpty(topCategorias)}">
+                        <td colspan="2" class="text-center text-muted">Sin datos disponibles</td>
+                    </tr>
+                    <tr th:each="categoria : ${topCategorias}">
+                        <td th:text="${categoria.nombre}">Sin categoría</td>
+                        <td class="fw-bold" th:text="${categoria.cantidad}">0</td>
                     </tr>
                 </tbody>
             </table>
@@ -505,10 +565,16 @@
                 ['ticketsEnProceso', 'ticketsEnProceso'],
                 ['ticketsResueltos', 'ticketsResueltos'],
                 ['ticketsCerrados', 'ticketsCerrados'],
-                ['ticketsReabiertos', 'ticketsReabiertos'],
-                ['slaPorcentaje', 'slaPorcentaje'],
-                ['slaCumplen', 'slaCumplen'],
-                ['slaIncumplen', 'slaIncumplen']
+                ['ticketsEnEspera', 'ticketsEnEspera'],
+                ['ticketsResueltosTotal', 'ticketsResueltosTotal'],
+                ['ticketsNoResueltos', 'ticketsNoResueltos'],
+                ['ticketsCancelados', 'ticketsCancelados'],
+                ['slaPrimeraRespuestaPorcentaje', 'slaPrimeraRespuestaPorcentaje'],
+                ['slaPrimeraRespuestaCumplen', 'slaPrimeraRespuestaCumplen'],
+                ['slaPrimeraRespuestaIncumplen', 'slaPrimeraRespuestaIncumplen'],
+                ['slaResolucionPorcentaje', 'slaResolucionPorcentaje'],
+                ['slaResolucionCumplen', 'slaResolucionCumplen'],
+                ['slaResolucionIncumplen', 'slaResolucionIncumplen']
             ];
             mapping.forEach(function(pair) {
                 var target = document.getElementById(pair[0]);
@@ -522,6 +588,12 @@
             var tableSource = doc.getElementById('estado-table-body');
             if (tableTarget && tableSource) {
                 tableTarget.innerHTML = tableSource.innerHTML;
+            }
+
+            var categoriasTarget = document.getElementById('categorias-table-body');
+            var categoriasSource = doc.getElementById('categorias-table-body');
+            if (categoriasTarget && categoriasSource) {
+                categoriasTarget.innerHTML = categoriasSource.innerHTML;
             }
         }
 

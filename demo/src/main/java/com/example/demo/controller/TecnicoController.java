@@ -26,6 +26,9 @@ public class TecnicoController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
     // Panel principal del técnico
     @GetMapping("/panel")
     public String panel(HttpSession session, Model model) {
@@ -92,6 +95,7 @@ public class TecnicoController {
     public String cambiarEstado(@PathVariable Long id,
                                  @RequestParam String nuevoEstado,
                                  @RequestParam(required = false) String observaciones,
+                                 @RequestParam(value = "evidenciaResolucion", required = false) org.springframework.web.multipart.MultipartFile evidenciaResolucion,
                                  HttpSession session) {
         Usuario tecnico = (Usuario) session.getAttribute("usuario");
         if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
@@ -100,7 +104,11 @@ public class TecnicoController {
 
         try {
             EstadoTicket estado = EstadoTicket.valueOf(nuevoEstado);
-            ticketService.cambiarEstado(id, estado, tecnico, observaciones);
+            String evidenciaNombre = null;
+            if (evidenciaResolucion != null && !evidenciaResolucion.isEmpty()) {
+                evidenciaNombre = fileStorageService.guardarArchivo(evidenciaResolucion);
+            }
+            ticketService.cambiarEstado(id, estado, tecnico, observaciones, evidenciaNombre);
         } catch (Exception e) {
             return "redirect:/tecnico/ticket/" + id + "?error=cambioestado";
         }
@@ -136,7 +144,7 @@ public class TecnicoController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null && ticket.getAsignadoA() == null) {
-            ticketService.asignarTecnico(id, tecnico);
+            ticketService.asignarTecnico(id, tecnico, tecnico);
             ticketService.cambiarEstado(id, EstadoTicket.EN_PROCESO, tecnico, "Ticket asignado y tomado en proceso");
         }
 

@@ -191,6 +191,7 @@ public class AdministradorController {
         Map<String, Object> reporteSLA;
         Map<String, Long> reportePorEstado;
         Map<String, Object> reporteGeneral;
+        List<Map<String, Object>> topCategorias;
 
         // If period specified, compute date range
         if (periodo != null) {
@@ -202,6 +203,8 @@ public class AdministradorController {
                 desdeDate = ahora.minusMonths(1);
             } else if ("semanal".equalsIgnoreCase(periodo)) {
                 desdeDate = ahora.minusWeeks(1);
+            } else if ("trimestral".equalsIgnoreCase(periodo)) {
+                desdeDate = ahora.minusMonths(3);
             } else if ("custom".equalsIgnoreCase(periodo) && desde != null && hasta != null) {
                 DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate d = LocalDate.parse(desde, fmt);
@@ -213,6 +216,7 @@ public class AdministradorController {
             reporteSLA = reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate);
             reportePorEstado = reporteService.generarReportePorEstadoPorPeriodo(desdeDate, hastaDate);
             reporteGeneral = reporteService.generarReporteGeneralPorPeriodo(desdeDate, hastaDate);
+            topCategorias = reporteService.generarTopCategoriasPorPeriodo(desdeDate, hastaDate);
             model.addAttribute("periodoSeleccionado", periodo);
             model.addAttribute("desde", desde);
             model.addAttribute("hasta", hasta);
@@ -220,11 +224,13 @@ public class AdministradorController {
             reporteSLA = reporteService.generarReporteSLA();
             reportePorEstado = reporteService.generarReportePorEstado();
             reporteGeneral = reporteService.generarReporteGeneral();
+            topCategorias = reporteService.generarTopCategorias();
         }
 
         model.addAttribute("reporteSLA", reporteSLA);
         model.addAttribute("reportePorEstado", reportePorEstado);
         model.addAttribute("reporteGeneral", reporteGeneral);
+        model.addAttribute("topCategorias", topCategorias);
         model.addAttribute("usuario", admin);
         return "admin/reportes";
     }
@@ -251,10 +257,10 @@ public class AdministradorController {
             }
         }
 
-        List<Usuario> tecnicos = usuarioService.obtenerTodosTecnicos();
+        List<Usuario> asignables = usuarioService.obtenerUsuariosAsignables();
 
         model.addAttribute("tickets", tickets);
-        model.addAttribute("tecnicos", tecnicos);
+        model.addAttribute("asignables", asignables);
         model.addAttribute("usuario", admin);
         model.addAttribute("filtro", filtro == null ? "all" : filtro);
         return "admin/tickets";
@@ -314,7 +320,7 @@ public class AdministradorController {
     }
 
     // Asignarme el ticket como administrador
-    @PostMapping("/ticket/{id}/asignarme")
+    @PostMapping({"/ticket/{id}/asignarme", "/tickets/{id}/asignarme"})
     public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
         Usuario admin = (Usuario) session.getAttribute("usuario");
         if (admin == null || admin.getRol() != Rol.ADMIN) {
@@ -323,7 +329,7 @@ public class AdministradorController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null) {
-            ticketService.asignarTecnico(id, admin);
+            ticketService.asignarTecnico(id, admin, admin);
         }
 
         return "redirect:/admin/ticket/" + id;
@@ -339,9 +345,9 @@ public class AdministradorController {
             return "redirect:/login";
         }
 
-        Usuario tecnico = usuarioService.obtenerPorId(tecnicoId);
-        if (tecnico != null && tecnico.getRol() == Rol.TECNICO) {
-            ticketService.asignarTecnico(id, tecnico);
+        Usuario asignado = usuarioService.obtenerPorId(tecnicoId);
+        if (asignado != null && (asignado.getRol() == Rol.TECNICO || asignado.getRol() == Rol.ADMIN)) {
+            ticketService.asignarTecnico(id, asignado, admin);
         }
 
         return "redirect:/admin/tickets?success=assigned";

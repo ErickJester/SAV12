@@ -46,8 +46,8 @@ class UsuarioPersistenceRestartTest {
             Usuario usuario = new Usuario();
             usuario.setNombre("Usuario Persistente");
             usuario.setCorreo(correo);
-            usuario.setPassword("secret");
-            usuario.setRol(Rol.USUARIO);
+            usuario.setPasswordHash("secret");
+            usuario.setRol(Rol.ALUMNO);
             usuarioRepository.saveAndFlush(usuario);
         }
 

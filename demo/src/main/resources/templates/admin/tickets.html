@@ -227,7 +227,7 @@
         <!-- Header -->
         <div class="header-section">
             <h1><i class="bi bi-ticket-perforated"></i> Gestión de Tickets</h1>
-            <p class="text-muted mb-0">Supervisa y asigna técnicos a todos los tickets del sistema</p>
+            <p class="text-muted mb-0">Supervisa y asigna responsables a todos los tickets del sistema</p>
         </div>
 
         <!-- Filtros Rápidos -->
@@ -241,7 +241,7 @@
         <!-- Alerta de éxito -->
         <div th:if="${param.success == 'assigned'}" class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle"></i>
-            <strong>¡Éxito!</strong> Técnico asignado correctamente al ticket.
+            <strong>¡Éxito!</strong> Responsable asignado correctamente al ticket.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
@@ -255,7 +255,7 @@
                         <th><i class="bi bi-person"></i> Usuario</th>
                         <th><i class="bi bi-info-circle"></i> Estado</th>
                         <th><i class="bi bi-exclamation-triangle"></i> Prioridad</th>
-                        <th><i class="bi bi-person-gear"></i> Técnico</th>
+                        <th><i class="bi bi-person-gear"></i> Asignado</th>
                         <th><i class="bi bi-calendar-event"></i> Creación</th>
                         <th><i class="bi bi-gear"></i> Acción</th>
                     </tr>
@@ -273,7 +273,7 @@
                         </td>
                         <td>
                             <span th:if="${ticket.asignadoA != null}" class="badge bg-light text-dark">
-                                <i class="bi bi-person-check"></i> <span th:text="${ticket.asignadoA.nombre}">Técnico</span>
+                                <i class="bi bi-person-check"></i> <span th:text="${ticket.asignadoA.nombre}">Asignado</span>
                             </span>
                             <span th:if="${ticket.asignadoA == null}" class="badge bg-secondary">
                                 <i class="bi bi-dash-lg"></i> Sin asignar
@@ -283,15 +283,15 @@
                             <small th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
                         </td>
                         <td>
-                            <!-- Asignar técnico -->
+                            <!-- Asignar responsable -->
                             <form th:action="@{/admin/tickets/{id}/asignar-tecnico(id=${ticket.id})}" method="post" class="form-inline-assign">
                                 <select name="tecnicoId" class="form-select form-select-sm" required>
                                     <option value="">Asignar...</option>
-                                    <option th:each="tec : ${tecnicos}" 
-                                            th:value="${tec.id}" 
-                                            th:text="${tec.nombre}"
-                                            th:selected="${ticket.asignadoA != null && ticket.asignadoA.id == tec.id}">
-                                        Técnico
+                                    <option th:each="asignable : ${asignables}" 
+                                            th:value="${asignable.id}" 
+                                            th:text="${asignable.nombre}"
+                                            th:selected="${ticket.asignadoA != null && ticket.asignadoA.id == asignable.id}">
+                                        Asignado
                                     </option>
                                 </select>
                                 <button type="submit" class="btn-assign-tecnico">
