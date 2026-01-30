@@ -61,12 +61,19 @@ public class TicketService {
     }
 
     public Ticket cambiarEstado(Long ticketId, EstadoTicket nuevoEstado, Usuario usuario, String observaciones) {
+        return cambiarEstado(ticketId, nuevoEstado, usuario, observaciones, null);
+    }
+
+    public Ticket cambiarEstado(Long ticketId, EstadoTicket nuevoEstado, Usuario usuario, String observaciones, String evidenciaResolucion) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
 
         EstadoTicket estadoAnterior = ticket.getEstado();
         ticket.setEstado(nuevoEstado);
         ticket.setFechaActualizacion(LocalDateTime.now());
+        if (evidenciaResolucion != null && !evidenciaResolucion.isEmpty()) {
+            ticket.setEvidenciaResolucion(evidenciaResolucion);
+        }
 
         if (nuevoEstado == EstadoTicket.RESUELTO || nuevoEstado == EstadoTicket.CERRADO) {
             ticket.setFechaResolucion(LocalDateTime.now());
@@ -85,14 +92,22 @@ public class TicketService {
     }
 
     public Ticket asignarTecnico(Long ticketId, Usuario tecnico) {
+        return asignarTecnico(ticketId, tecnico, tecnico);
+    }
+
+    public Ticket asignarTecnico(Long ticketId, Usuario asignado, Usuario actor) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
         
-        ticket.setAsignadoA(tecnico);
+        ticket.setAsignadoA(asignado);
         ticket.setFechaActualizacion(LocalDateTime.now());
         
         Ticket savedTicket = ticketRepository.save(ticket);
-        registrarHistorial(savedTicket, tecnico, "Técnico asignado: " + tecnico.getNombre(), null, null, null);
+        String accion = "Asignado a: " + asignado.getNombre();
+        if (actor != null && asignado.getId() != null && !asignado.getId().equals(actor.getId())) {
+            accion += " por " + actor.getNombre();
+        }
+        registrarHistorial(savedTicket, actor != null ? actor : asignado, accion, null, null, null);
         // Notificar al técnico asignado
         emailService.notifyAssignedTechnician(savedTicket);
         

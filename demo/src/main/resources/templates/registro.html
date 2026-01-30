@@ -198,9 +198,17 @@
         <div class="register-body">
             <!-- SELECTOR DE ROLES -->
             <div class="role-selector">
-                <div class="role-box" data-role="USUARIO">
-                    <i class="bi bi-person role-box-icon"></i>
-                    Usuario
+                <div class="role-box" data-role="ALUMNO">
+                    <i class="bi bi-mortarboard role-box-icon"></i>
+                    Alumno
+                </div>
+                <div class="role-box" data-role="DOCENTE">
+                    <i class="bi bi-person-badge role-box-icon"></i>
+                    Docente
+                </div>
+                <div class="role-box" data-role="ADMINISTRATIVO">
+                    <i class="bi bi-briefcase role-box-icon"></i>
+                    Administrativo
                 </div>
                 <!--
                 <div class="role-box" data-role="ADMIN">
@@ -239,14 +247,14 @@
                     <input type="password" th:field="*{password2}" class="form-control" placeholder="••••••••" required>
                 </div>
 
-                <!-- SOLO USUARIO -->
+                <!-- SOLO ALUMNO -->
                 <div class="form-group hidden-group" id="boleta-group">
                     <label><i class="bi bi-card-text"></i> Número de boleta</label>
                     <input type="text" th:field="*{boleta}" class="form-control" id="boleta" placeholder="Ejemplo: 2021123456">
                     <small class="text-muted">Tu número de boleta ESCOM</small>
                 </div>
 
-                <!-- SOLO ADMIN / TECNICO -->
+                <!-- SOLO DOCENTE / ADMINISTRATIVO -->
                 <div class="form-group hidden-group" id="trabajador-group">
                     <label><i class="bi bi-hash"></i> ID de trabajador</label>
                     <input type="text" th:field="*{idTrabajador}" class="form-control" id="idTrabajador" placeholder="ID del trabajador">
@@ -291,10 +299,10 @@
             trabajadorInput.required = false;
 
             // Mostrar según rol
-            if (rol === 'USUARIO') {
+            if (rol === 'ALUMNO') {
                 boletaGroup.classList.add('show');
                 boletaInput.required = true;
-            } else if (rol === 'ADMIN' || rol === 'TECNICO') {
+            } else if (rol === 'DOCENTE' || rol === 'ADMINISTRATIVO' || rol === 'ADMIN' || rol === 'TECNICO') {
                 trabajadorGroup.classList.add('show');
                 trabajadorInput.required = true;
             }

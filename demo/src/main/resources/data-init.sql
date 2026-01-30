@@ -27,17 +27,17 @@ INSERT INTO ubicaciones (edificio, piso, salon, activo) VALUES
 ('Edificio Oeste', 'Primer Piso', 'Auditorio', true);
 
 -- Crear usuarios de ejemplo (las contraseñas deberían estar encriptadas en producción)
--- Usuario normal
-INSERT INTO usuarios (nombre, correo, password, rol, boleta, id_trabajador, activo) VALUES 
-('Juan Pérez', 'juan.perez@example.com', 'password123', 'USUARIO', '2021600001', NULL, true);
+-- Alumno
+INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo) VALUES 
+('Juan Pérez', 'juan.perez@example.com', 'password123', 'ALUMNO', '2021600001', NULL, true);
 
 -- Técnico
-INSERT INTO usuarios (nombre, correo, password, rol, boleta, id_trabajador, activo) VALUES 
+INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo) VALUES 
 ('María García', 'maria.garcia@example.com', 'tecnico123', 'TECNICO', NULL, 'TEC001', true),
 ('Carlos López', 'carlos.lopez@example.com', 'tecnico123', 'TECNICO', NULL, 'TEC002', true);
 
 -- Administrador
-INSERT INTO usuarios (nombre, correo, password, rol, boleta, id_trabajador, activo) VALUES 
+INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo) VALUES 
 ('Admin Sistema', 'admin@example.com', 'admin123', 'ADMIN', NULL, 'ADM001', true);
 
 -- Nota: En producción, las contraseñas deben estar encriptadas con BCrypt

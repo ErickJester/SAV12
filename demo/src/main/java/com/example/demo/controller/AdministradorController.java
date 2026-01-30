@@ -202,6 +202,8 @@ public class AdministradorController {
                 desdeDate = ahora.minusMonths(1);
             } else if ("semanal".equalsIgnoreCase(periodo)) {
                 desdeDate = ahora.minusWeeks(1);
+            } else if ("trimestral".equalsIgnoreCase(periodo)) {
+                desdeDate = ahora.minusMonths(3);
             } else if ("custom".equalsIgnoreCase(periodo) && desde != null && hasta != null) {
                 DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate d = LocalDate.parse(desde, fmt);
@@ -251,10 +253,10 @@ public class AdministradorController {
             }
         }
 
-        List<Usuario> tecnicos = usuarioService.obtenerTodosTecnicos();
+        List<Usuario> asignables = usuarioService.obtenerUsuariosAsignables();
 
         model.addAttribute("tickets", tickets);
-        model.addAttribute("tecnicos", tecnicos);
+        model.addAttribute("asignables", asignables);
         model.addAttribute("usuario", admin);
         model.addAttribute("filtro", filtro == null ? "all" : filtro);
         return "admin/tickets";
@@ -314,7 +316,7 @@ public class AdministradorController {
     }
 
     // Asignarme el ticket como administrador
-    @PostMapping("/ticket/{id}/asignarme")
+    @PostMapping({"/ticket/{id}/asignarme", "/tickets/{id}/asignarme"})
     public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
         Usuario admin = (Usuario) session.getAttribute("usuario");
         if (admin == null || admin.getRol() != Rol.ADMIN) {
@@ -323,7 +325,7 @@ public class AdministradorController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null) {
-            ticketService.asignarTecnico(id, admin);
+            ticketService.asignarTecnico(id, admin, admin);
         }
 
         return "redirect:/admin/ticket/" + id;
@@ -339,9 +341,9 @@ public class AdministradorController {
             return "redirect:/login";
         }
 
-        Usuario tecnico = usuarioService.obtenerPorId(tecnicoId);
-        if (tecnico != null && tecnico.getRol() == Rol.TECNICO) {
-            ticketService.asignarTecnico(id, tecnico);
+        Usuario asignado = usuarioService.obtenerPorId(tecnicoId);
+        if (asignado != null && (asignado.getRol() == Rol.TECNICO || asignado.getRol() == Rol.ADMIN)) {
+            ticketService.asignarTecnico(id, asignado, admin);
         }
 
         return "redirect:/admin/tickets?success=assigned";
