@@ -59,7 +59,7 @@ public class TicketService {
         Ticket savedTicket = ticketRepository.save(ticket);
 
         // Registrar en historial
-        registrarHistorial(savedTicket, usuario, "CREACION", null, EstadoTicket.ABIERTO, "Ticket creado");
+        registrarHistorial(savedTicket, usuario, "CREACION", "Ticket creado", null, EstadoTicket.ABIERTO, null, null, null);
 
         // Notificar a técnicos sobre nuevo reporte
         emailService.notifyTechniciansOnNewTicket(savedTicket);
@@ -77,15 +77,23 @@ public class TicketService {
 
         LocalDateTime ahora = LocalDateTime.now();
         EstadoTicket estadoAnterior = ticket.getEstado();
-        ticket.setEstado(nuevoEstado);
-        ticket.setFechaActualizacion(LocalDateTime.now());
-        if (evidenciaResolucion != null && !evidenciaResolucion.isEmpty()) {
-            ticket.setEvidenciaResolucion(evidenciaResolucion);
+        if (nuevoEstado == EstadoTicket.EN_ESPERA && ticket.getEsperaDesde() == null) {
+            ticket.setEsperaDesde(ahora);
+        }
+        if (estadoAnterior == EstadoTicket.EN_ESPERA && nuevoEstado != EstadoTicket.EN_ESPERA) {
+            actualizarTiempoEspera(ticket, ahora);
         }
 
+        marcarPrimeraRespuestaSiCorresponde(ticket, usuario, ahora);
+
+        ticket.setEstado(nuevoEstado);
+        ticket.setFechaActualizacion(ahora);
+
         if (nuevoEstado == EstadoTicket.RESUELTO) {
-            ticket.setFechaResolucion(ahora);
-            establecerTiempoResolucionSiCorresponde(ticket, ahora);
+            if (ticket.getFechaResolucion() == null) {
+                ticket.setFechaResolucion(ahora);
+            }
+            establecerTiempoResolucionSiCorresponde(ticket, ticket.getFechaResolucion());
         }
 
         if (nuevoEstado == EstadoTicket.CERRADO) {
@@ -93,7 +101,7 @@ public class TicketService {
             if (ticket.getFechaResolucion() == null) {
                 ticket.setFechaResolucion(ahora);
             }
-            establecerTiempoResolucionSiCorresponde(ticket, ahora);
+            establecerTiempoResolucionSiCorresponde(ticket, ticket.getFechaResolucion());
         }
 
         if (evidenciaResolucion != null && !evidenciaResolucion.isEmpty()) {
@@ -103,14 +111,15 @@ public class TicketService {
         Ticket savedTicket = ticketRepository.save(ticket);
 
         // Registrar en historial
-        String detalle = "Estado cambiado de " + estadoAnterior + " a " + nuevoEstado;
-        if (observaciones != null && !observaciones.isEmpty()) {
-            detalle = detalle + " - " + observaciones;
-        }
-        registrarHistorial(savedTicket, usuario, "ESTADO", estadoAnterior, nuevoEstado, detalle);
+        String accion = "Estado cambiado de " + estadoAnterior + " a " + nuevoEstado;
+        registrarHistorial(savedTicket, usuario, "ESTADO", accion, estadoAnterior, nuevoEstado, observaciones, null, null);
 
         // Notificar al usuario sobre cambio de estado
-        emailService.notifyUserOnTicketChange(savedTicket, detalle);
+        String detalleNotificacion = accion;
+        if (observaciones != null && !observaciones.isEmpty()) {
+            detalleNotificacion = detalleNotificacion + " - " + observaciones;
+        }
+        emailService.notifyUserOnTicketChange(savedTicket, detalleNotificacion);
 
         return savedTicket;
     }
@@ -123,15 +132,18 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
         
+        Usuario asignadoAnterior = ticket.getAsignadoA();
+        LocalDateTime ahora = LocalDateTime.now();
         ticket.setAsignadoA(asignado);
-        ticket.setFechaActualizacion(LocalDateTime.now());
+        ticket.setFechaActualizacion(ahora);
+
+        marcarPrimeraRespuestaSiCorresponde(ticket, actor, ahora);
         
         Ticket savedTicket = ticketRepository.save(ticket);
-        String accion = "Asignado a: " + asignado.getNombre();
-        if (actor != null && asignado.getId() != null && !asignado.getId().equals(actor.getId())) {
-            accion += " por " + actor.getNombre();
-        }
-        registrarHistorial(savedTicket, actor != null ? actor : asignado, accion, null, null, null);
+        String nombreAnterior = asignadoAnterior != null ? asignadoAnterior.getNombre() : "Sin asignar";
+        String nombreNuevo = asignado != null ? asignado.getNombre() : "Sin asignar";
+        String accion = "Asignación: " + nombreAnterior + " -> " + nombreNuevo;
+        registrarHistorial(savedTicket, actor != null ? actor : asignado, "ASIGNACION", accion, null, null, null, asignadoAnterior, asignado);
         // Notificar al técnico asignado
         emailService.notifyAssignedTechnician(savedTicket);
         
@@ -156,7 +168,7 @@ public class TicketService {
 
             Ticket savedTicket = ticketRepository.save(ticket);
             String detalle = "Ticket reabierto por " + (usuario != null ? usuario.getNombre() : "usuario");
-            registrarHistorial(savedTicket, usuario, "REAPERTURA", estadoAnterior, EstadoTicket.ABIERTO, detalle);
+            registrarHistorial(savedTicket, usuario, "REAPERTURA", "Ticket reabierto", estadoAnterior, EstadoTicket.ABIERTO, detalle, null, null);
             return savedTicket;
         }
 
@@ -222,8 +234,7 @@ public class TicketService {
             return false;
         }
         return usuario.getRol() == Rol.TECNICO
-                || usuario.getRol() == Rol.ADMIN
-                || usuario.getRol() == Rol.ADMINISTRATIVO;
+                || usuario.getRol() == Rol.ADMIN;
     }
 
     private boolean esCreadorOStaff(Ticket ticket, Usuario usuario) {
@@ -264,7 +275,7 @@ public class TicketService {
                 nombreRol = rol.name();
             }
         }
-        return slaPoliticaRepository.findByNombre(nombreRol).orElseGet(() ->
-                slaPoliticaRepository.findByNombre("ALUMNO").orElse(null));
+        return slaPoliticaRepository.findFirstByRolSolicitanteAndActivoTrue(nombreRol).orElseGet(() ->
+                slaPoliticaRepository.findFirstByRolSolicitanteAndActivoTrue("ALUMNO").orElse(null));
     }
 }
