@@ -19,7 +19,9 @@ public class Usuario {
 
     private String nombre;
     private String correo;
-    private String password;
+
+    @Column(name = "password_hash")
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     private Rol rol;
@@ -57,12 +59,12 @@ public void setCorreo(String correo) {
     this.correo = correo;
 }
 
-public String getPassword() {
-    return password;
+public String getPasswordHash() {
+    return passwordHash;
 }
 
-public void setPassword(String password) {
-    this.password = password;
+public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
 }
 
 public Rol getRol() {
