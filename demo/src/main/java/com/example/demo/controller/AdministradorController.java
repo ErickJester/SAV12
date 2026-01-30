@@ -191,6 +191,7 @@ public class AdministradorController {
         Map<String, Object> reporteSLA;
         Map<String, Long> reportePorEstado;
         Map<String, Object> reporteGeneral;
+        List<Map<String, Object>> topCategorias;
 
         // If period specified, compute date range
         if (periodo != null) {
@@ -215,6 +216,7 @@ public class AdministradorController {
             reporteSLA = reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate);
             reportePorEstado = reporteService.generarReportePorEstadoPorPeriodo(desdeDate, hastaDate);
             reporteGeneral = reporteService.generarReporteGeneralPorPeriodo(desdeDate, hastaDate);
+            topCategorias = reporteService.generarTopCategoriasPorPeriodo(desdeDate, hastaDate);
             model.addAttribute("periodoSeleccionado", periodo);
             model.addAttribute("desde", desde);
             model.addAttribute("hasta", hasta);
@@ -222,11 +224,13 @@ public class AdministradorController {
             reporteSLA = reporteService.generarReporteSLA();
             reportePorEstado = reporteService.generarReportePorEstado();
             reporteGeneral = reporteService.generarReporteGeneral();
+            topCategorias = reporteService.generarTopCategorias();
         }
 
         model.addAttribute("reporteSLA", reporteSLA);
         model.addAttribute("reportePorEstado", reportePorEstado);
         model.addAttribute("reporteGeneral", reporteGeneral);
+        model.addAttribute("topCategorias", topCategorias);
         model.addAttribute("usuario", admin);
         return "admin/reportes";
     }
