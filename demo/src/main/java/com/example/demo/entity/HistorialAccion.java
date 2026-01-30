@@ -22,6 +22,9 @@ public class HistorialAccion {
     @Column(nullable = false)
     private String accion; // "Ticket creado", "Estado cambiado a EN_PROCESO", etc.
 
+    @Column(name = "tipo")
+    private String tipo;
+
     @Column(name = "estado_anterior")
     @Enumerated(EnumType.STRING)
     private EstadoTicket estadoAnterior;
@@ -29,6 +32,14 @@ public class HistorialAccion {
     @Column(name = "estado_nuevo")
     @Enumerated(EnumType.STRING)
     private EstadoTicket estadoNuevo;
+
+    @ManyToOne
+    @JoinColumn(name = "asignado_anterior_id")
+    private Usuario asignadoAnterior;
+
+    @ManyToOne
+    @JoinColumn(name = "asignado_nuevo_id")
+    private Usuario asignadoNuevo;
 
     @Column(name = "fecha_accion", nullable = false)
     private LocalDateTime fechaAccion = LocalDateTime.now();
@@ -72,6 +83,14 @@ public class HistorialAccion {
         this.accion = accion;
     }
 
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
     public EstadoTicket getEstadoAnterior() {
         return estadoAnterior;
     }
@@ -86,6 +105,22 @@ public class HistorialAccion {
 
     public void setEstadoNuevo(EstadoTicket estadoNuevo) {
         this.estadoNuevo = estadoNuevo;
+    }
+
+    public Usuario getAsignadoAnterior() {
+        return asignadoAnterior;
+    }
+
+    public void setAsignadoAnterior(Usuario asignadoAnterior) {
+        this.asignadoAnterior = asignadoAnterior;
+    }
+
+    public Usuario getAsignadoNuevo() {
+        return asignadoNuevo;
+    }
+
+    public void setAsignadoNuevo(Usuario asignadoNuevo) {
+        this.asignadoNuevo = asignadoNuevo;
     }
 
     public LocalDateTime getFechaAccion() {
