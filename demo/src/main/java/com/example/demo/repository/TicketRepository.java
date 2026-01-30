@@ -13,7 +13,5 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByCreadoPor(Usuario usuario);
     List<Ticket> findByAsignadoA(Usuario tecnico);
     List<Ticket> findByEstado(EstadoTicket estado);
-    List<Ticket> findByCreadoPorOrderByFechaCreacionDesc(Usuario usuario);
-    List<Ticket> findByAsignadoAOrderByFechaCreacionDesc(Usuario tecnico);
     List<Ticket> findAllByOrderByFechaCreacionDesc();
 }

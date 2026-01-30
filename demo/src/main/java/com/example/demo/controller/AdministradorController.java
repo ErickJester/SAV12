@@ -323,7 +323,7 @@ public class AdministradorController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null) {
-            ticketService.asignarTecnico(id, admin);
+            ticketService.asignarTecnico(id, admin, admin);
         }
 
         return "redirect:/admin/ticket/" + id;
@@ -341,7 +341,7 @@ public class AdministradorController {
 
         Usuario tecnico = usuarioService.obtenerPorId(tecnicoId);
         if (tecnico != null && tecnico.getRol() == Rol.TECNICO) {
-            ticketService.asignarTecnico(id, tecnico);
+            ticketService.asignarTecnico(id, tecnico, admin);
         }
 
         return "redirect:/admin/tickets?success=assigned";
