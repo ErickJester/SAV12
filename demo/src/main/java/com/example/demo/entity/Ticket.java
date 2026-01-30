@@ -25,12 +25,16 @@ public class Ticket {
     private Prioridad prioridad = Prioridad.MEDIA;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "creado_por_id", nullable = false)
+    private Usuario creadoPor;
 
     @ManyToOne
-    @JoinColumn(name = "tecnico_id")
-    private Usuario tecnico;
+    @JoinColumn(name = "asignado_a_id")
+    private Usuario asignadoA;
+
+    @ManyToOne
+    @JoinColumn(name = "sla_politica_id")
+    private SlaPolitica slaPolitica;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
@@ -49,7 +53,32 @@ public class Ticket {
     @Column(name = "fecha_resolucion")
     private LocalDateTime fechaResolucion;
 
-    private String evidencia; // ruta del archivo
+    @Column(name = "fecha_cierre")
+    private LocalDateTime fechaCierre;
+
+    @Column(name = "fecha_primera_respuesta")
+    private LocalDateTime fechaPrimeraRespuesta;
+
+    @Column(name = "evidencia_problema")
+    private String evidenciaProblema; // ruta del archivo
+
+    @Column(name = "evidencia_resolucion")
+    private String evidenciaResolucion;
+
+    @Column(name = "tiempo_primera_respuesta_seg")
+    private Integer tiempoPrimeraRespuestaSeg;
+
+    @Column(name = "tiempo_resolucion_seg")
+    private Integer tiempoResolucionSeg;
+
+    @Column(name = "tiempo_espera_seg")
+    private Integer tiempoEsperaSeg;
+
+    @Column(name = "espera_desde")
+    private LocalDateTime esperaDesde;
+
+    @Column(name = "reabierto_count")
+    private Integer reabiertoCount = 0;
 
     @Column(name = "tiempo_respuesta_sla")
     private Integer tiempoRespuestaSLA = 24; // horas
@@ -98,20 +127,28 @@ public class Ticket {
         this.prioridad = prioridad;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Usuario getCreadoPor() {
+        return creadoPor;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setCreadoPor(Usuario creadoPor) {
+        this.creadoPor = creadoPor;
     }
 
-    public Usuario getTecnico() {
-        return tecnico;
+    public Usuario getAsignadoA() {
+        return asignadoA;
     }
 
-    public void setTecnico(Usuario tecnico) {
-        this.tecnico = tecnico;
+    public void setAsignadoA(Usuario asignadoA) {
+        this.asignadoA = asignadoA;
+    }
+
+    public SlaPolitica getSlaPolitica() {
+        return slaPolitica;
+    }
+
+    public void setSlaPolitica(SlaPolitica slaPolitica) {
+        this.slaPolitica = slaPolitica;
     }
 
     public Categoria getCategoria() {
@@ -154,12 +191,76 @@ public class Ticket {
         this.fechaResolucion = fechaResolucion;
     }
 
-    public String getEvidencia() {
-        return evidencia;
+    public LocalDateTime getFechaCierre() {
+        return fechaCierre;
     }
 
-    public void setEvidencia(String evidencia) {
-        this.evidencia = evidencia;
+    public void setFechaCierre(LocalDateTime fechaCierre) {
+        this.fechaCierre = fechaCierre;
+    }
+
+    public LocalDateTime getFechaPrimeraRespuesta() {
+        return fechaPrimeraRespuesta;
+    }
+
+    public void setFechaPrimeraRespuesta(LocalDateTime fechaPrimeraRespuesta) {
+        this.fechaPrimeraRespuesta = fechaPrimeraRespuesta;
+    }
+
+    public String getEvidenciaProblema() {
+        return evidenciaProblema;
+    }
+
+    public void setEvidenciaProblema(String evidenciaProblema) {
+        this.evidenciaProblema = evidenciaProblema;
+    }
+
+    public String getEvidenciaResolucion() {
+        return evidenciaResolucion;
+    }
+
+    public void setEvidenciaResolucion(String evidenciaResolucion) {
+        this.evidenciaResolucion = evidenciaResolucion;
+    }
+
+    public Integer getTiempoPrimeraRespuestaSeg() {
+        return tiempoPrimeraRespuestaSeg;
+    }
+
+    public void setTiempoPrimeraRespuestaSeg(Integer tiempoPrimeraRespuestaSeg) {
+        this.tiempoPrimeraRespuestaSeg = tiempoPrimeraRespuestaSeg;
+    }
+
+    public Integer getTiempoResolucionSeg() {
+        return tiempoResolucionSeg;
+    }
+
+    public void setTiempoResolucionSeg(Integer tiempoResolucionSeg) {
+        this.tiempoResolucionSeg = tiempoResolucionSeg;
+    }
+
+    public Integer getTiempoEsperaSeg() {
+        return tiempoEsperaSeg;
+    }
+
+    public void setTiempoEsperaSeg(Integer tiempoEsperaSeg) {
+        this.tiempoEsperaSeg = tiempoEsperaSeg;
+    }
+
+    public LocalDateTime getEsperaDesde() {
+        return esperaDesde;
+    }
+
+    public void setEsperaDesde(LocalDateTime esperaDesde) {
+        this.esperaDesde = esperaDesde;
+    }
+
+    public Integer getReabiertoCount() {
+        return reabiertoCount;
+    }
+
+    public void setReabiertoCount(Integer reabiertoCount) {
+        this.reabiertoCount = reabiertoCount;
     }
 
     public Integer getTiempoRespuestaSLA() {

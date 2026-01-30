@@ -262,15 +262,9 @@
                 </thead>
                 <tbody>
                     <tr th:each="ticket : ${tickets}">
-                        <td>
-                            <a class="ticket-link" th:href="@{/admin/ticket/{id}(id=${ticket.id})}">
-                                <strong th:text="${ticket.id}">1</strong>
-                            </a>
-                        </td>
-                        <td>
-                            <a class="ticket-link" th:href="@{/admin/ticket/{id}(id=${ticket.id})}" th:text="${ticket.titulo}">Título</a>
-                        </td>
-                        <td th:text="${ticket.usuario.nombre}">Usuario</td>
+                        <td><strong th:text="${ticket.id}">1</strong></td>
+                        <td th:text="${ticket.titulo}">Título</td>
+                        <td th:text="${ticket.creadoPor.nombre}">Usuario</td>
                         <td>
                             <span class="badge-estado" th:classappend="${'badge-' + ticket.estado.name().toLowerCase()}" th:text="${ticket.estado}">Estado</span>
                         </td>
@@ -278,10 +272,10 @@
                             <span class="badge-prioridad" th:classappend="${'badge-' + ticket.prioridad.name().toLowerCase()}" th:text="${ticket.prioridad}">Prioridad</span>
                         </td>
                         <td>
-                            <span th:if="${ticket.tecnico != null}" class="badge bg-light text-dark">
-                                <i class="bi bi-person-check"></i> <span th:text="${ticket.tecnico.nombre}">Técnico</span>
+                            <span th:if="${ticket.asignadoA != null}" class="badge bg-light text-dark">
+                                <i class="bi bi-person-check"></i> <span th:text="${ticket.asignadoA.nombre}">Técnico</span>
                             </span>
-                            <span th:if="${ticket.tecnico == null}" class="badge bg-secondary">
+                            <span th:if="${ticket.asignadoA == null}" class="badge bg-secondary">
                                 <i class="bi bi-dash-lg"></i> Sin asignar
                             </span>
                         </td>
@@ -296,7 +290,7 @@
                                     <option th:each="tec : ${tecnicos}" 
                                             th:value="${tec.id}" 
                                             th:text="${tec.nombre}"
-                                            th:selected="${ticket.tecnico != null && ticket.tecnico.id == tec.id}">
+                                            th:selected="${ticket.asignadoA != null && ticket.asignadoA.id == tec.id}">
                                         Técnico
                                     </option>
                                 </select>
