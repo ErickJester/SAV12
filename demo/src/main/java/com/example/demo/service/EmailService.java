@@ -79,8 +79,8 @@ public class EmailService {
     }
 
     public void notifyUserOnTicketChange(Ticket ticket, String detalles) {
-        if (ticket == null || ticket.getUsuario() == null) return;
-        Usuario u = ticket.getUsuario();
+        if (ticket == null || ticket.getCreadoPor() == null) return;
+        Usuario u = ticket.getCreadoPor();
         if (u.getCorreo() == null) return;
         String subject = "Actualización en tu ticket: " + ticket.getTitulo();
         String body = "Hola " + u.getNombre() + ",\n\nTu ticket ha sido actualizado.\n\nDetalles: " + (detalles != null ? detalles : "(sin detalles)") + "\n\nEstado actual: " + ticket.getEstado() + "\n\nSaludos.";
@@ -88,8 +88,8 @@ public class EmailService {
     }
 
     public void notifyAssignedTechnician(Ticket ticket) {
-        if (ticket == null || ticket.getTecnico() == null) return;
-        Usuario t = ticket.getTecnico();
+        if (ticket == null || ticket.getAsignadoA() == null) return;
+        Usuario t = ticket.getAsignadoA();
         if (t.getCorreo() == null) return;
         String subject = "Se te ha asignado un ticket: " + ticket.getTitulo();
         String body = "Hola " + t.getNombre() + ",\n\nSe te ha asignado el ticket: \nTítulo: " + ticket.getTitulo() + "\nDescripción: " + ticket.getDescripcion() + "\n\nPor favor revisa el sistema para más detalles.";

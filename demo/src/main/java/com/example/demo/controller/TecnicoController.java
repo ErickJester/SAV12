@@ -39,7 +39,7 @@ public class TecnicoController {
                 .collect(Collectors.toList());
         List<Ticket> ticketsSinAsignar = ticketService.obtenerTodosLosTickets()
                 .stream()
-                .filter(t -> t.getTecnico() == null && t.getEstado() == EstadoTicket.ABIERTO)
+                .filter(t -> t.getAsignadoA() == null && t.getEstado() == EstadoTicket.ABIERTO)
                 .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
                 .collect(Collectors.toList());
 
@@ -135,7 +135,7 @@ public class TecnicoController {
         }
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
-        if (ticket != null && ticket.getTecnico() == null) {
+        if (ticket != null && ticket.getAsignadoA() == null) {
             ticketService.asignarTecnico(id, tecnico);
             ticketService.cambiarEstado(id, EstadoTicket.EN_PROCESO, tecnico, "Ticket asignado y tomado en proceso");
         }

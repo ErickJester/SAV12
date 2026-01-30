@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.DTO.CategoriaDTO;
+import com.example.demo.DTO.ComentarioDTO;
 import com.example.demo.DTO.UbicacionDTO;
 import com.example.demo.entity.*;
 import com.example.demo.service.*;
@@ -34,6 +35,9 @@ public class AdministradorController {
 
     @Autowired
     private ReporteService reporteService;
+
+    @Autowired
+    private ComentarioService comentarioService;
 
     // Panel principal del administrador
     @GetMapping("/panel")
@@ -254,6 +258,75 @@ public class AdministradorController {
         model.addAttribute("usuario", admin);
         model.addAttribute("filtro", filtro == null ? "all" : filtro);
         return "admin/tickets";
+    }
+
+    // Ver detalle de un ticket
+    @GetMapping("/ticket/{id}")
+    public String verDetalleTicket(@PathVariable Long id, HttpSession session, Model model) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || admin.getRol() != Rol.ADMIN) {
+            return "redirect:/login";
+        }
+
+        Ticket ticket = ticketService.obtenerTicketPorId(id);
+        if (ticket == null) {
+            return "redirect:/admin/tickets?error=notfound";
+        }
+
+        List<Comentario> comentarios = comentarioService.obtenerComentariosDeTicket(ticket);
+        List<HistorialAccion> historial = ticketService.obtenerHistorialDeTicket(ticket);
+
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("comentarios", comentarios);
+        model.addAttribute("historial", historial);
+        model.addAttribute("usuario", admin);
+        return "admin/detalle-ticket";
+    }
+
+    // Agregar comentario a un ticket como administrador
+    @PostMapping("/ticket/{id}/comentar")
+    public String agregarComentario(@PathVariable Long id,
+                                     @RequestParam String contenido,
+                                     HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || admin.getRol() != Rol.ADMIN) {
+            return "redirect:/login";
+        }
+
+        ComentarioDTO dto = new ComentarioDTO();
+        dto.setTicketId(id);
+        dto.setContenido(contenido);
+
+        comentarioService.agregarComentario(dto, admin);
+        return "redirect:/admin/ticket/" + id;
+    }
+
+    // Reabrir ticket como administrador
+    @PostMapping("/ticket/{id}/reabrir")
+    public String reabrirTicket(@PathVariable Long id, HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || admin.getRol() != Rol.ADMIN) {
+            return "redirect:/login";
+        }
+
+        ticketService.reabrirTicketComoAdmin(id, admin);
+        return "redirect:/admin/ticket/" + id;
+    }
+
+    // Asignarme el ticket como administrador
+    @PostMapping("/ticket/{id}/asignarme")
+    public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || admin.getRol() != Rol.ADMIN) {
+            return "redirect:/login";
+        }
+
+        Ticket ticket = ticketService.obtenerTicketPorId(id);
+        if (ticket != null) {
+            ticketService.asignarTecnico(id, admin);
+        }
+
+        return "redirect:/admin/ticket/" + id;
     }
 
     // Asignar técnico a ticket

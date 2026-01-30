@@ -6,7 +6,7 @@ public class TicketDTO {
     private Long categoriaId;
     private Long ubicacionId;
     private String prioridad;
-    private String evidencia;
+    private String evidenciaProblema;
 
     // Constructores
     public TicketDTO() {}
@@ -52,11 +52,11 @@ public class TicketDTO {
         this.prioridad = prioridad;
     }
 
-    public String getEvidencia() {
-        return evidencia;
+    public String getEvidenciaProblema() {
+        return evidenciaProblema;
     }
 
-    public void setEvidencia(String evidencia) {
-        this.evidencia = evidencia;
+    public void setEvidenciaProblema(String evidenciaProblema) {
+        this.evidenciaProblema = evidenciaProblema;
     }
 }

@@ -71,6 +71,16 @@
             background: var(--light-bg);
         }
 
+        .ticket-link {
+            color: #4c1d95;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .ticket-link:hover {
+            text-decoration: underline;
+        }
+
         .badge-estado {
             font-size: 12px;
             padding: 6px 12px;
@@ -254,7 +264,7 @@
                     <tr th:each="ticket : ${tickets}">
                         <td><strong th:text="${ticket.id}">1</strong></td>
                         <td th:text="${ticket.titulo}">Título</td>
-                        <td th:text="${ticket.usuario.nombre}">Usuario</td>
+                        <td th:text="${ticket.creadoPor.nombre}">Usuario</td>
                         <td>
                             <span class="badge-estado" th:classappend="${'badge-' + ticket.estado.name().toLowerCase()}" th:text="${ticket.estado}">Estado</span>
                         </td>
@@ -262,10 +272,10 @@
                             <span class="badge-prioridad" th:classappend="${'badge-' + ticket.prioridad.name().toLowerCase()}" th:text="${ticket.prioridad}">Prioridad</span>
                         </td>
                         <td>
-                            <span th:if="${ticket.tecnico != null}" class="badge bg-light text-dark">
-                                <i class="bi bi-person-check"></i> <span th:text="${ticket.tecnico.nombre}">Técnico</span>
+                            <span th:if="${ticket.asignadoA != null}" class="badge bg-light text-dark">
+                                <i class="bi bi-person-check"></i> <span th:text="${ticket.asignadoA.nombre}">Técnico</span>
                             </span>
-                            <span th:if="${ticket.tecnico == null}" class="badge bg-secondary">
+                            <span th:if="${ticket.asignadoA == null}" class="badge bg-secondary">
                                 <i class="bi bi-dash-lg"></i> Sin asignar
                             </span>
                         </td>
@@ -280,7 +290,7 @@
                                     <option th:each="tec : ${tecnicos}" 
                                             th:value="${tec.id}" 
                                             th:text="${tec.nombre}"
-                                            th:selected="${ticket.tecnico != null && ticket.tecnico.id == tec.id}">
+                                            th:selected="${ticket.asignadoA != null && ticket.asignadoA.id == tec.id}">
                                         Técnico
                                     </option>
                                 </select>

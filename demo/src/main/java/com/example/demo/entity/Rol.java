@@ -1,7 +1,9 @@
 package com.example.demo.entity;
 
 public enum Rol {
-    USUARIO,
+    ALUMNO,
+    DOCENTE,
+    TECNICO,
     ADMIN,
-    TECNICO
+    ADMINISTRATIVO
 }
