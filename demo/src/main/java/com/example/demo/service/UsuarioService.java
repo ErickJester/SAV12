@@ -30,6 +30,10 @@ public class UsuarioService {
         return usuarioRepository.findByRol(Rol.TECNICO);
     }
 
+    public List<Usuario> obtenerUsuariosAsignables() {
+        return usuarioRepository.findByRolIn(List.of(Rol.TECNICO, Rol.ADMIN));
+    }
+
     public List<Usuario> obtenerTodosUsuarios() {
         return usuarioRepository.findAll();
     }

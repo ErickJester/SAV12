@@ -194,8 +194,18 @@
     color: white;
 }
 
-.badge.USUARIO {
-    background-color: #007bff;
+.badge.ALUMNO {
+    background-color: #0ea5e9;
+    color: white;
+}
+
+.badge.DOCENTE {
+    background-color: #22c55e;
+    color: white;
+}
+
+.badge.ADMINISTRATIVO {
+    background-color: #f97316;
     color: white;
 }
 

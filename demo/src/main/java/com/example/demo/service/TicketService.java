@@ -78,17 +78,10 @@ public class TicketService {
         LocalDateTime ahora = LocalDateTime.now();
         EstadoTicket estadoAnterior = ticket.getEstado();
         ticket.setEstado(nuevoEstado);
-        ticket.setFechaActualizacion(ahora);
-
-        if (estadoAnterior == EstadoTicket.EN_ESPERA && nuevoEstado != EstadoTicket.EN_ESPERA) {
-            actualizarTiempoEspera(ticket, ahora);
+        ticket.setFechaActualizacion(LocalDateTime.now());
+        if (evidenciaResolucion != null && !evidenciaResolucion.isEmpty()) {
+            ticket.setEvidenciaResolucion(evidenciaResolucion);
         }
-
-        if (nuevoEstado == EstadoTicket.EN_ESPERA) {
-            ticket.setEsperaDesde(ahora);
-        }
-
-        marcarPrimeraRespuestaSiCorresponde(ticket, usuario, ahora);
 
         if (nuevoEstado == EstadoTicket.RESUELTO) {
             ticket.setFechaResolucion(ahora);
@@ -122,21 +115,23 @@ public class TicketService {
         return savedTicket;
     }
 
-    public Ticket asignarTecnico(Long ticketId, Usuario tecnico, Usuario actor) {
+    public Ticket asignarTecnico(Long ticketId, Usuario tecnico) {
+        return asignarTecnico(ticketId, tecnico, tecnico);
+    }
+
+    public Ticket asignarTecnico(Long ticketId, Usuario asignado, Usuario actor) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
         
-        LocalDateTime ahora = LocalDateTime.now();
-        Usuario asignadoAnterior = ticket.getAsignadoA();
-        ticket.setAsignadoA(tecnico);
-        ticket.setFechaActualizacion(ahora);
-        marcarPrimeraRespuestaSiCorresponde(ticket, actor, ahora);
+        ticket.setAsignadoA(asignado);
+        ticket.setFechaActualizacion(LocalDateTime.now());
         
         Ticket savedTicket = ticketRepository.save(ticket);
-        String anterior = asignadoAnterior != null ? asignadoAnterior.getNombre() : "Sin asignar";
-        String nuevo = tecnico != null ? tecnico.getNombre() : "Sin asignar";
-        String detalles = "Asignado de " + anterior + " a " + nuevo;
-        registrarHistorial(savedTicket, actor, "ASIGNACION", null, null, detalles);
+        String accion = "Asignado a: " + asignado.getNombre();
+        if (actor != null && asignado.getId() != null && !asignado.getId().equals(actor.getId())) {
+            accion += " por " + actor.getNombre();
+        }
+        registrarHistorial(savedTicket, actor != null ? actor : asignado, accion, null, null, null);
         // Notificar al técnico asignado
         emailService.notifyAssignedTechnician(savedTicket);
         
