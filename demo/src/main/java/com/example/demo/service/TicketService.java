@@ -52,7 +52,7 @@ public class TicketService {
         Ticket savedTicket = ticketRepository.save(ticket);
 
         // Registrar en historial
-        registrarHistorial(savedTicket, usuario, "Ticket creado", null, EstadoTicket.ABIERTO, null);
+        registrarHistorial(savedTicket, usuario, "CREACION", "Ticket creado", null, EstadoTicket.ABIERTO, null, null, null);
 
         // Notificar a técnicos sobre nuevo reporte
         emailService.notifyTechniciansOnNewTicket(savedTicket);
@@ -76,7 +76,7 @@ public class TicketService {
 
         // Registrar en historial
         String accion = "Estado cambiado de " + estadoAnterior + " a " + nuevoEstado;
-        registrarHistorial(savedTicket, usuario, accion, estadoAnterior, nuevoEstado, observaciones);
+        registrarHistorial(savedTicket, usuario, "CAMBIO_ESTADO", accion, estadoAnterior, nuevoEstado, observaciones, null, null);
 
         // Notificar al usuario sobre cambio de estado
         emailService.notifyUserOnTicketChange(savedTicket, accion + (observaciones != null ? " - " + observaciones : ""));
@@ -87,12 +87,23 @@ public class TicketService {
     public Ticket asignarTecnico(Long ticketId, Usuario tecnico) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
-        
+        Usuario asignadoAnterior = ticket.getAsignadoA();
+
         ticket.setAsignadoA(tecnico);
         ticket.setFechaActualizacion(LocalDateTime.now());
         
         Ticket savedTicket = ticketRepository.save(ticket);
-        registrarHistorial(savedTicket, tecnico, "Técnico asignado: " + tecnico.getNombre(), null, null, null);
+        registrarHistorial(
+                savedTicket,
+                tecnico,
+                "ASIGNACION",
+                "Técnico asignado: " + tecnico.getNombre(),
+                null,
+                null,
+                null,
+                asignadoAnterior,
+                tecnico
+        );
         // Notificar al técnico asignado
         emailService.notifyAssignedTechnician(savedTicket);
         
@@ -123,14 +134,26 @@ public class TicketService {
         return ticketRepository.findById(id).orElse(null);
     }
 
-    private void registrarHistorial(Ticket ticket, Usuario usuario, String accion, 
-                                     EstadoTicket estadoAnterior, EstadoTicket estadoNuevo, String detalles) {
+    private void registrarHistorial(
+            Ticket ticket,
+            Usuario usuario,
+            String tipo,
+            String accion,
+            EstadoTicket estadoAnterior,
+            EstadoTicket estadoNuevo,
+            String detalles,
+            Usuario asignadoAnterior,
+            Usuario asignadoNuevo
+    ) {
         HistorialAccion historial = new HistorialAccion();
         historial.setTicket(ticket);
         historial.setUsuario(usuario);
+        historial.setTipo(tipo);
         historial.setAccion(accion);
         historial.setEstadoAnterior(estadoAnterior);
         historial.setEstadoNuevo(estadoNuevo);
+        historial.setAsignadoAnterior(asignadoAnterior);
+        historial.setAsignadoNuevo(asignadoNuevo);
         historial.setDetalles(detalles);
         historialRepository.save(historial);
     }
