@@ -136,7 +136,7 @@ public class TecnicoController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null && ticket.getAsignadoA() == null) {
-            ticketService.asignarTecnico(id, tecnico);
+            ticketService.asignarTecnico(id, tecnico, tecnico);
             ticketService.cambiarEstado(id, EstadoTicket.EN_PROCESO, tecnico, "Ticket asignado y tomado en proceso");
         }
 

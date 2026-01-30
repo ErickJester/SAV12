@@ -76,7 +76,9 @@ public class ReporteService {
         reporte.put("ticketsEnProceso", ticketRepository.findByEstado(EstadoTicket.EN_PROCESO).size());
         reporte.put("ticketsResueltos", ticketRepository.findByEstado(EstadoTicket.RESUELTO).size());
         reporte.put("ticketsCerrados", ticketRepository.findByEstado(EstadoTicket.CERRADO).size());
-        reporte.put("ticketsReabiertos", ticketRepository.findByEstado(EstadoTicket.REABIERTO).size());
+        reporte.put("ticketsReabiertos", tickets.stream()
+                .filter(ticket -> ticket.getReabiertoCount() != null && ticket.getReabiertoCount() > 0)
+                .count());
 
         return reporte;
     }
@@ -96,7 +98,9 @@ public class ReporteService {
         reporte.put("ticketsEnProceso", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.EN_PROCESO).count());
         reporte.put("ticketsResueltos", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.RESUELTO).count());
         reporte.put("ticketsCerrados", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CERRADO).count());
-        reporte.put("ticketsReabiertos", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.REABIERTO).count());
+        reporte.put("ticketsReabiertos", tickets.stream()
+                .filter(t -> t.getReabiertoCount() != null && t.getReabiertoCount() > 0)
+                .count());
 
         return reporte;
     }
