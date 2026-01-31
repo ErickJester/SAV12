@@ -21,7 +21,53 @@ public class ReporteService {
 
     public Map<String, Object> generarReporteSLA() {
         List<Ticket> todosTickets = ticketRepository.findAll();
-        return construirReporteSLA(todosTickets);
+        int totalTickets = 0;
+        int ticketsCumplenSLA = 0;
+        int ticketsIncumplenSLA = 0;
+        int ticketsCumplenPrimeraRespuesta = 0;
+        int ticketsIncumplenPrimeraRespuesta = 0;
+        int ticketsCumplenResolucion = 0;
+        int ticketsIncumplenResolucion = 0;
+
+        for (Ticket ticket : todosTickets) {
+            if ((ticket.getEstado() == EstadoTicket.RESUELTO || ticket.getEstado() == EstadoTicket.CERRADO)
+                    && ticket.getFechaResolucion() != null) {
+                totalTickets++;
+                SlaResultado resultado = evaluarSla(ticket);
+                if (resultado.cumplePrimeraRespuesta) {
+                    ticketsCumplenPrimeraRespuesta++;
+                } else {
+                    ticketsIncumplenPrimeraRespuesta++;
+                }
+                if (resultado.cumpleResolucion) {
+                    ticketsCumplenResolucion++;
+                } else {
+                    ticketsIncumplenResolucion++;
+                }
+                if (resultado.cumpleGlobal) {
+                    ticketsCumplenSLA++;
+                } else {
+                    ticketsIncumplenSLA++;
+                }
+            }
+        }
+
+        reporte.put("totalTickets", totalTickets);
+        reporte.put("ticketsCumplenSLA", ticketsCumplenSLA);
+        reporte.put("ticketsIncumplenSLA", ticketsIncumplenSLA);
+        reporte.put("ticketsCumplenPrimeraRespuesta", ticketsCumplenPrimeraRespuesta);
+        reporte.put("ticketsIncumplenPrimeraRespuesta", ticketsIncumplenPrimeraRespuesta);
+        reporte.put("ticketsCumplenResolucion", ticketsCumplenResolucion);
+        reporte.put("ticketsIncumplenResolucion", ticketsIncumplenResolucion);
+        
+        if (totalTickets > 0) {
+            double porcentajeCumplimiento = (ticketsCumplenSLA * 100.0) / totalTickets;
+            reporte.put("porcentajeCumplimiento", String.format("%.2f", porcentajeCumplimiento));
+        } else {
+            reporte.put("porcentajeCumplimiento", "0.00");
+        }
+
+        return reporte;
     }
 
     public Map<String, Long> generarReportePorEstado() {
@@ -52,14 +98,24 @@ public class ReporteService {
                 .count();
 
         reporte.put("totalTickets", tickets.size());
-        reporte.put("ticketsResueltosTotal", ticketsResueltos);
-        reporte.put("ticketsNoResueltos", ticketsNoResueltos);
-        reporte.put("ticketsCancelados", ticketsCancelados);
-        reporte.put("ticketsAbiertos", ticketRepository.findByEstado(EstadoTicket.ABIERTO).size());
+        long ticketsAbiertos = ticketRepository.findByEstado(EstadoTicket.ABIERTO).size()
+                + ticketRepository.findByEstado(EstadoTicket.REABIERTO).size();
+        reporte.put("ticketsAbiertos", ticketsAbiertos);
+        reporte.put("ticketsReabiertos", ticketRepository.findByEstado(EstadoTicket.REABIERTO).size());
         reporte.put("ticketsEnProceso", ticketRepository.findByEstado(EstadoTicket.EN_PROCESO).size());
         reporte.put("ticketsEnEspera", ticketRepository.findByEstado(EstadoTicket.EN_ESPERA).size());
         reporte.put("ticketsResueltos", ticketRepository.findByEstado(EstadoTicket.RESUELTO).size());
         reporte.put("ticketsCerrados", ticketRepository.findByEstado(EstadoTicket.CERRADO).size());
+        reporte.put("ticketsCancelados", ticketRepository.findByEstado(EstadoTicket.CANCELADO).size());
+        long resueltosTotal = ticketRepository.findByEstado(EstadoTicket.RESUELTO).size()
+                + ticketRepository.findByEstado(EstadoTicket.CERRADO).size();
+        long noResueltos = ticketRepository.findByEstado(EstadoTicket.ABIERTO).size()
+                + ticketRepository.findByEstado(EstadoTicket.REABIERTO).size()
+                + ticketRepository.findByEstado(EstadoTicket.EN_PROCESO).size()
+                + ticketRepository.findByEstado(EstadoTicket.EN_ESPERA).size();
+        reporte.put("ticketsResueltosTotal", resueltosTotal);
+        reporte.put("ticketsNoResueltos", noResueltos);
+        reporte.put("topCategorias", obtenerTopCategorias(tickets));
 
         return reporte;
     }
@@ -75,22 +131,28 @@ public class ReporteService {
                 .collect(Collectors.toList());
 
         reporte.put("totalTickets", tickets.size());
-        reporte.put("ticketsResueltosTotal", tickets.stream()
-                .filter(t -> t.getEstado() == EstadoTicket.RESUELTO || t.getEstado() == EstadoTicket.CERRADO)
-                .count());
-        reporte.put("ticketsNoResueltos", tickets.stream()
-                .filter(t -> t.getEstado() == EstadoTicket.ABIERTO
-                        || t.getEstado() == EstadoTicket.EN_PROCESO
-                        || t.getEstado() == EstadoTicket.EN_ESPERA)
-                .count());
-        reporte.put("ticketsCancelados", tickets.stream()
-                .filter(t -> t.getEstado() == EstadoTicket.CANCELADO)
-                .count());
-        reporte.put("ticketsAbiertos", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.ABIERTO).count());
+        long ticketsAbiertos = tickets.stream()
+                .filter(t -> t.getEstado() == EstadoTicket.ABIERTO || t.getEstado() == EstadoTicket.REABIERTO)
+                .count();
+        reporte.put("ticketsAbiertos", ticketsAbiertos);
+        reporte.put("ticketsReabiertos", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.REABIERTO).count());
         reporte.put("ticketsEnProceso", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.EN_PROCESO).count());
         reporte.put("ticketsEnEspera", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.EN_ESPERA).count());
         reporte.put("ticketsResueltos", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.RESUELTO).count());
         reporte.put("ticketsCerrados", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CERRADO).count());
+        reporte.put("ticketsCancelados", tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CANCELADO).count());
+        long resueltosTotal = tickets.stream()
+                .filter(t -> t.getEstado() == EstadoTicket.RESUELTO || t.getEstado() == EstadoTicket.CERRADO)
+                .count();
+        long noResueltos = tickets.stream()
+                .filter(t -> t.getEstado() == EstadoTicket.ABIERTO
+                        || t.getEstado() == EstadoTicket.REABIERTO
+                        || t.getEstado() == EstadoTicket.EN_PROCESO
+                        || t.getEstado() == EstadoTicket.EN_ESPERA)
+                .count();
+        reporte.put("ticketsResueltosTotal", resueltosTotal);
+        reporte.put("ticketsNoResueltos", noResueltos);
+        reporte.put("topCategorias", obtenerTopCategorias(tickets));
 
         return reporte;
     }
@@ -125,40 +187,31 @@ public class ReporteService {
                         !t.getFechaCreacion().isBefore(desde) && !t.getFechaCreacion().isAfter(hasta))
                 .collect(Collectors.toList());
 
-        return construirReporteSLA(todosTickets);
-    }
+        int totalTickets = 0;
+        int ticketsCumplenSLA = 0;
+        int ticketsIncumplenSLA = 0;
+        int ticketsCumplenPrimeraRespuesta = 0;
+        int ticketsIncumplenPrimeraRespuesta = 0;
+        int ticketsCumplenResolucion = 0;
+        int ticketsIncumplenResolucion = 0;
 
-    private Map<String, Object> construirReporteSLA(List<Ticket> tickets) {
-        Map<String, Object> reporte = new HashMap<>();
-        int totalTickets = tickets.size();
-        int primeraRespuestaCumplen = 0;
-        int primeraRespuestaIncumplen = 0;
-        int primeraRespuestaTotal = 0;
-        int resolucionCumplen = 0;
-        int resolucionIncumplen = 0;
-        int resolucionTotal = 0;
-
-        for (Ticket ticket : tickets) {
-            Integer slaPrimeraRespuestaMin = ticket.getTiempoRespuestaSLA();
-            Integer tiempoPrimeraRespuestaSeg = ticket.getTiempoPrimeraRespuestaSeg();
-            if (ticket.getFechaPrimeraRespuesta() != null
-                    && tiempoPrimeraRespuestaSeg != null
-                    && slaPrimeraRespuestaMin != null) {
-                primeraRespuestaTotal++;
-                if (tiempoPrimeraRespuestaSeg <= slaPrimeraRespuestaMin * 60L) {
-                    primeraRespuestaCumplen++;
+        for (Ticket ticket : todosTickets) {
+            if ((ticket.getEstado() == EstadoTicket.RESUELTO || ticket.getEstado() == EstadoTicket.CERRADO)
+                    && ticket.getFechaResolucion() != null) {
+                totalTickets++;
+                SlaResultado resultado = evaluarSla(ticket);
+                if (resultado.cumplePrimeraRespuesta) {
+                    ticketsCumplenPrimeraRespuesta++;
                 } else {
-                    primeraRespuestaIncumplen++;
+                    ticketsIncumplenPrimeraRespuesta++;
                 }
-            }
-
-            Integer tiempoResolucionSeg = ticket.getTiempoResolucionSeg();
-            if (tiempoResolucionSeg != null && slaPrimeraRespuestaMin != null) {
-                int tiempoEsperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
-                long resolucionEfectivaSeg = Math.max(0L, (long) tiempoResolucionSeg - tiempoEsperaSeg);
-                resolucionTotal++;
-                if (resolucionEfectivaSeg <= slaPrimeraRespuestaMin * 60L) {
-                    resolucionCumplen++;
+                if (resultado.cumpleResolucion) {
+                    ticketsCumplenResolucion++;
+                } else {
+                    ticketsIncumplenResolucion++;
+                }
+                if (resultado.cumpleGlobal) {
+                    ticketsCumplenSLA++;
                 } else {
                     resolucionIncumplen++;
                 }
@@ -166,46 +219,72 @@ public class ReporteService {
         }
 
         reporte.put("totalTickets", totalTickets);
-        reporte.put("slaPrimeraRespuestaCumplen", primeraRespuestaCumplen);
-        reporte.put("slaPrimeraRespuestaIncumplen", primeraRespuestaIncumplen);
-        reporte.put("slaPrimeraRespuestaTotal", primeraRespuestaTotal);
-        reporte.put("slaPrimeraRespuestaPorcentaje", formatearPorcentaje(primeraRespuestaCumplen, primeraRespuestaTotal));
-        reporte.put("slaResolucionCumplen", resolucionCumplen);
-        reporte.put("slaResolucionIncumplen", resolucionIncumplen);
-        reporte.put("slaResolucionTotal", resolucionTotal);
-        reporte.put("slaResolucionPorcentaje", formatearPorcentaje(resolucionCumplen, resolucionTotal));
+        reporte.put("ticketsCumplenSLA", ticketsCumplenSLA);
+        reporte.put("ticketsIncumplenSLA", ticketsIncumplenSLA);
+        reporte.put("ticketsCumplenPrimeraRespuesta", ticketsCumplenPrimeraRespuesta);
+        reporte.put("ticketsIncumplenPrimeraRespuesta", ticketsIncumplenPrimeraRespuesta);
+        reporte.put("ticketsCumplenResolucion", ticketsCumplenResolucion);
+        reporte.put("ticketsIncumplenResolucion", ticketsIncumplenResolucion);
+
+        if (totalTickets > 0) {
+            double porcentajeCumplimiento = (ticketsCumplenSLA * 100.0) / totalTickets;
+            reporte.put("porcentajeCumplimiento", String.format("%.2f", porcentajeCumplimiento));
+        } else {
+            reporte.put("porcentajeCumplimiento", "0.00");
+        }
 
         return reporte;
     }
 
-    private String formatearPorcentaje(int cumplen, int total) {
-        if (total > 0) {
-            double porcentaje = (cumplen * 100.0) / total;
-            return String.format("%.2f", porcentaje);
+    private SlaResultado evaluarSla(Ticket ticket) {
+        if (ticket.getSlaPolitica() == null) {
+            return new SlaResultado(false, false, false);
         }
-        return "0.00";
+
+        Integer tiempoPrimeraRespuestaSeg = ticket.getTiempoPrimeraRespuestaSeg();
+        Integer tiempoResolucionSeg = ticket.getTiempoResolucionSeg();
+        int slaPrimeraRespuestaMin = ticket.getSlaPolitica().getSlaPrimeraRespuestaMin();
+        int slaResolucionMin = ticket.getSlaPolitica().getSlaResolucionMin();
+        int tiempoEsperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
+
+        boolean cumplePrimeraRespuesta = ticket.getFechaPrimeraRespuesta() != null
+                && tiempoPrimeraRespuestaSeg != null
+                && (tiempoPrimeraRespuestaSeg / 60.0) <= slaPrimeraRespuestaMin;
+        boolean cumpleResolucion = ticket.getFechaResolucion() != null
+                && tiempoResolucionSeg != null
+                && (Math.max(0, tiempoResolucionSeg - tiempoEsperaSeg) / 60.0) <= slaResolucionMin;
+
+        return new SlaResultado(cumplePrimeraRespuesta, cumpleResolucion,
+                cumplePrimeraRespuesta && cumpleResolucion);
     }
 
-    private List<Map<String, Object>> construirTopCategorias(List<Ticket> tickets) {
+    private List<Map<String, Object>> obtenerTopCategorias(List<Ticket> tickets) {
         return tickets.stream()
-                .collect(Collectors.groupingBy(ticket -> {
-                    if (ticket.getCategoria() == null || ticket.getCategoria().getNombre() == null) {
-                        return "Sin categoría";
-                    }
-                    String nombre = ticket.getCategoria().getNombre().trim();
-                    return nombre.isEmpty() ? "Sin categoría" : nombre;
-                }, Collectors.counting()))
+                .collect(Collectors.groupingBy(t -> t.getCategoria() != null
+                        ? t.getCategoria().getNombre()
+                        : "Sin categoría", Collectors.counting()))
                 .entrySet()
                 .stream()
-                .sorted(Entry.<String, Long>comparingByValue().reversed()
-                        .thenComparing(Entry.comparingByKey()))
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
                 .limit(5)
                 .map(entry -> {
                     Map<String, Object> item = new HashMap<>();
                     item.put("nombre", entry.getKey());
-                    item.put("cantidad", entry.getValue());
+                    item.put("total", entry.getValue());
                     return item;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private static class SlaResultado {
+        private final boolean cumplePrimeraRespuesta;
+        private final boolean cumpleResolucion;
+        private final boolean cumpleGlobal;
+
+        private SlaResultado(boolean cumplePrimeraRespuesta, boolean cumpleResolucion, boolean cumpleGlobal) {
+            this.cumplePrimeraRespuesta = cumplePrimeraRespuesta;
+            this.cumpleResolucion = cumpleResolucion;
+            this.cumpleGlobal = cumpleGlobal;
+        }
     }
 }

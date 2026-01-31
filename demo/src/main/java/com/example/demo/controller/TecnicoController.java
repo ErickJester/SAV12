@@ -6,8 +6,9 @@ import com.example.demo.service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframeAwork.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Comparator;
 import java.util.List;
@@ -42,7 +43,8 @@ public class TecnicoController {
                 .collect(Collectors.toList());
         List<Ticket> ticketsSinAsignar = ticketService.obtenerTodosLosTickets()
                 .stream()
-                .filter(t -> t.getAsignadoA() == null && t.getEstado() == EstadoTicket.ABIERTO)
+                .filter(t -> t.getAsignadoA() == null
+                        && (t.getEstado() == EstadoTicket.ABIERTO || t.getEstado() == EstadoTicket.REABIERTO))
                 .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
                 .collect(Collectors.toList());
 
@@ -95,7 +97,7 @@ public class TecnicoController {
     public String cambiarEstado(@PathVariable Long id,
                                  @RequestParam String nuevoEstado,
                                  @RequestParam(required = false) String observaciones,
-                                 @RequestParam(value = "evidenciaResolucion", required = false) org.springframework.web.multipart.MultipartFile evidenciaResolucion,
+                                 @RequestParam(value = "evidenciaResolucion", required = false) MultipartFile evidenciaResolucion,
                                  HttpSession session) {
         Usuario tecnico = (Usuario) session.getAttribute("usuario");
         if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
@@ -104,11 +106,11 @@ public class TecnicoController {
 
         try {
             EstadoTicket estado = EstadoTicket.valueOf(nuevoEstado);
-            String evidenciaNombre = null;
+            String evidenciaFilename = null;
             if (evidenciaResolucion != null && !evidenciaResolucion.isEmpty()) {
-                evidenciaNombre = fileStorageService.guardarArchivo(evidenciaResolucion);
+                evidenciaFilename = fileStorageService.guardarArchivo(evidenciaResolucion);
             }
-            ticketService.cambiarEstado(id, estado, tecnico, observaciones, evidenciaNombre);
+            ticketService.cambiarEstado(id, estado, tecnico, observaciones, evidenciaFilename);
         } catch (Exception e) {
             return "redirect:/tecnico/ticket/" + id + "?error=cambioestado";
         }
@@ -134,6 +136,22 @@ public class TecnicoController {
         return "redirect:/tecnico/ticket/" + id;
     }
 
+    // Reabrir ticket
+    @PostMapping("/ticket/{id}/reabrir")
+    public String reabrirTicket(@PathVariable Long id, HttpSession session) {
+        Usuario tecnico = (Usuario) session.getAttribute("usuario");
+        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
+            return "redirect:/login";
+        }
+
+        try {
+            ticketService.reabrirTicket(id, tecnico);
+        } catch (Exception e) {
+            return "redirect:/tecnico/ticket/" + id + "?error=reabrir";
+        }
+        return "redirect:/tecnico/ticket/" + id;
+    }
+
     // Asignarme un ticket
     @PostMapping("/ticket/{id}/asignar")
     public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
@@ -145,7 +163,7 @@ public class TecnicoController {
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null && ticket.getAsignadoA() == null) {
             ticketService.asignarTecnico(id, tecnico, tecnico);
-            ticketService.cambiarEstado(id, EstadoTicket.EN_PROCESO, tecnico, "Ticket asignado y tomado en proceso");
+            ticketService.cambiarEstado(id, EstadoTicket.EN_PROCESO, tecnico, "Ticket asignado y tomado en proceso", null);
         }
 
         return "redirect:/tecnico/ticket/" + id;

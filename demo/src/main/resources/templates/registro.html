@@ -203,7 +203,7 @@
                     Alumno
                 </div>
                 <div class="role-box" data-role="DOCENTE">
-                    <i class="bi bi-easel2 role-box-icon"></i>
+                    <i class="bi bi-journal-bookmark role-box-icon"></i>
                     Docente
                 </div>
                 <div class="role-box" data-role="ADMINISTRATIVO">
@@ -216,7 +216,7 @@
                 </div>
                 <div class="role-box" data-role="ADMIN">
                     <i class="bi bi-shield-lock role-box-icon"></i>
-                    Admin
+                    Administrador
                 </div>
             </div>
 
@@ -300,7 +300,7 @@
             if (rol === 'ALUMNO') {
                 boletaGroup.classList.add('show');
                 boletaInput.required = true;
-            } else if (['DOCENTE', 'ADMINISTRATIVO', 'TECNICO', 'ADMIN'].includes(rol)) {
+            } else if (rol === 'DOCENTE' || rol === 'ADMINISTRATIVO' || rol === 'ADMIN' || rol === 'TECNICO') {
                 trabajadorGroup.classList.add('show');
                 trabajadorInput.required = true;
             }

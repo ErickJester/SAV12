@@ -37,7 +37,7 @@ public class UsuarioController {
     @GetMapping("/panel")
     public String panel(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (!esUsuarioPermitido(usuario)) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -54,7 +54,7 @@ public class UsuarioController {
     @GetMapping("/crear-ticket")
     public String mostrarFormularioCrearTicket(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (!esUsuarioPermitido(usuario)) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -70,7 +70,7 @@ public class UsuarioController {
                              @RequestParam(value = "archivoEvidencia", required = false) org.springframework.web.multipart.MultipartFile archivo,
                              HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (!esUsuarioPermitido(usuario)) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -95,7 +95,7 @@ public class UsuarioController {
     @GetMapping("/mis-tickets")
     public String misTickets(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (!esUsuarioPermitido(usuario)) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -109,7 +109,7 @@ public class UsuarioController {
     @GetMapping("/ticket/{id}")
     public String verDetalleTicket(@PathVariable Long id, HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (!esUsuarioPermitido(usuario)) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -134,7 +134,7 @@ public class UsuarioController {
                                      @RequestParam String contenido,
                                      HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (!esUsuarioPermitido(usuario)) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -150,29 +150,25 @@ public class UsuarioController {
     @PostMapping("/ticket/{id}/reabrir")
     public String reabrirTicket(@PathVariable Long id, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || (!esUsuarioPermitido(usuario) && !esStaff(usuario))) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
-        if (ticket != null
-                && (ticket.getCreadoPor().getId().equals(usuario.getId()) || esStaff(usuario))
-                && (ticket.getEstado() == EstadoTicket.CERRADO || ticket.getEstado() == EstadoTicket.RESUELTO)) {
-            ticketService.reabrirTicket(id, usuario);
+        if (ticket != null && ticket.getCreadoPor().getId().equals(usuario.getId())) {
+            if (ticket.getEstado() == EstadoTicket.CERRADO
+                    || ticket.getEstado() == EstadoTicket.RESUELTO
+                    || ticket.getEstado() == EstadoTicket.CANCELADO) {
+                ticketService.reabrirTicket(id, usuario);
+            }
         }
 
         return "redirect:/usuario/ticket/" + id;
     }
 
-    private boolean esUsuarioPermitido(Usuario usuario) {
+    private boolean esUsuarioFinal(Usuario usuario) {
         return usuario != null && (usuario.getRol() == Rol.ALUMNO
-                || usuario.getRol() == Rol.DOCENTE
-                || usuario.getRol() == Rol.ADMINISTRATIVO);
-    }
-
-    private boolean esStaff(Usuario usuario) {
-        return usuario != null && (usuario.getRol() == Rol.ADMINISTRATIVO
-                || usuario.getRol() == Rol.TECNICO
-                || usuario.getRol() == Rol.ADMIN);
+            || usuario.getRol() == Rol.DOCENTE
+            || usuario.getRol() == Rol.ADMINISTRATIVO);
     }
 }

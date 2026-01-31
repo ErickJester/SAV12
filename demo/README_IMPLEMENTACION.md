@@ -6,15 +6,15 @@ Sistema completo de gestión de tickets con 3 roles diferenciados: Usuario, Téc
 ## Estructura Implementada
 
 ### 1. Entidades (Entity)
-- **Usuario**: Gestión de usuarios con roles (USUARIO, TECNICO, ADMIN)
+- **Usuario**: Gestión de usuarios con roles (ALUMNO, DOCENTE, ADMINISTRATIVO, TECNICO, ADMIN)
 - **Ticket**: Tickets de soporte con estados, prioridades y seguimiento
 - **Comentario**: Comentarios en tickets para comunicación
 - **Categoria**: Categorías de problemas
 - **Ubicacion**: Ubicaciones físicas (edificio, piso, salón)
 - **HistorialAccion**: Registro de todas las acciones en tickets
-- **EstadoTicket**: Enum (ABIERTO, EN_PROCESO, RESUELTO, CERRADO, REABIERTO)
+- **EstadoTicket**: Enum (ABIERTO, EN_PROCESO, EN_ESPERA, RESUELTO, CERRADO, CANCELADO)
 - **Prioridad**: Enum (BAJA, MEDIA, ALTA, URGENTE)
-- **Rol**: Enum (USUARIO, ADMIN, TECNICO)
+- **Rol**: Enum (ALUMNO, DOCENTE, ADMINISTRATIVO, TECNICO, ADMIN)
 
 ### 2. DTOs (Data Transfer Objects)
 - TicketDTO
@@ -108,7 +108,7 @@ Sistema completo de gestión de tickets con 3 roles diferenciados: Usuario, Téc
 
 ## Funcionalidades por Rol
 
-### USUARIO
+### ALUMNO / DOCENTE / ADMINISTRATIVO
 ✅ Crear tickets con evidencia
 ✅ Consultar mis tickets
 ✅ Ver detalles de tickets
@@ -169,9 +169,9 @@ Sistema completo de gestión de tickets con 3 roles diferenciados: Usuario, Téc
 ## Configuración de Base de Datos
 
 ```properties
-spring.datasource.url=jdbc:mysql://sav12.cj4iq8uc8saj.mx-central-1.rds.amazonaws.com:3306/sav12
-spring.datasource.username=admin
-spring.datasource.password=password
+spring.datasource.url=jdbc:mysql://localhost:3306/sav12_app
+spring.datasource.username=root
+spring.datasource.password=root
 spring.jpa.hibernate.ddl-auto=none
 ```
 
