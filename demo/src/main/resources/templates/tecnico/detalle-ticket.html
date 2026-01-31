@@ -489,6 +489,15 @@
                     </form>
                 </div>
 
+                <!-- Reabrir Ticket -->
+                <div th:if="${ticket.estado.name() == 'RESUELTO' || ticket.estado.name() == 'CERRADO'}" class="card-custom" style="background: #fef3c7;">
+                    <form th:action="@{/tecnico/ticket/{id}/reabrir(id=${ticket.id})}" method="post">
+                        <button type="submit" class="btn-action btn-secondary-custom" style="width: 100%;">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reabrir Ticket
+                        </button>
+                    </form>
+                </div>
+
                 <!-- Botón de Asignación -->
                 <div th:if="${ticket.asignadoA == null}" class="card-custom" style="background: #fffbeb;">
                     <form th:action="@{/tecnico/ticket/{id}/asignar(id=${ticket.id})}" method="post">

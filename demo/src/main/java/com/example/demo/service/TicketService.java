@@ -94,12 +94,24 @@ public class TicketService {
             ticket.setTiempoPrimeraRespuestaSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), ahora).getSeconds()));
         }
 
-        if (nuevoEstado == EstadoTicket.RESUELTO || nuevoEstado == EstadoTicket.CERRADO) {
-            ticket.setFechaResolucion(ahora);
-            if (nuevoEstado == EstadoTicket.CERRADO) {
-                ticket.setFechaCierre(ahora);
+        if (nuevoEstado == EstadoTicket.RESUELTO) {
+            if (ticket.getFechaResolucion() == null) {
+                ticket.setFechaResolucion(ahora);
             }
-            ticket.setTiempoResolucionSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), ahora).getSeconds()));
+            LocalDateTime fechaResolucion = ticket.getFechaResolucion();
+            ticket.setTiempoResolucionSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), fechaResolucion).getSeconds()));
+            if (evidenciaResolucion != null) {
+                ticket.setEvidenciaResolucion(evidenciaResolucion);
+            }
+        }
+
+        if (nuevoEstado == EstadoTicket.CERRADO) {
+            ticket.setFechaCierre(ahora);
+            if (ticket.getFechaResolucion() == null) {
+                ticket.setFechaResolucion(ahora);
+            }
+            LocalDateTime fechaResolucion = ticket.getFechaResolucion();
+            ticket.setTiempoResolucionSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), fechaResolucion).getSeconds()));
             if (evidenciaResolucion != null) {
                 ticket.setEvidenciaResolucion(evidenciaResolucion);
             }
