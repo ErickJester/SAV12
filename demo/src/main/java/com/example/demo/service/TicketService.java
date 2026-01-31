@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -230,7 +229,6 @@ public class TicketService {
         HistorialAccion historial = new HistorialAccion();
         historial.setTicket(ticket);
         historial.setUsuario(usuario);
-        historial.setTipo(tipo);
         historial.setTipo(tipo);
         historial.setAccion(accion);
         historial.setEstadoAnterior(estadoAnterior);

@@ -465,7 +465,6 @@
                         <i class="bi bi-arrow-repeat"></i> Cambiar Estado del Ticket
                     </h3>
                     <form th:action="@{/tecnico/ticket/{id}/cambiar-estado(id=${ticket.id})}" method="post" enctype="multipart/form-data">
-                    <form th:action="@{/tecnico/ticket/{id}/cambiar-estado(id=${ticket.id})}" method="post" enctype="multipart/form-data">
                         <div class="form-section">
                             <label for="nuevoEstado">Nuevo Estado:</label>
                             <select name="nuevoEstado" id="nuevoEstado" class="form-control" required>

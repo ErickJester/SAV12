@@ -107,9 +107,6 @@ public class HomeController {
             case ALUMNO:
             case DOCENTE:
             case ADMINISTRATIVO:
-            case ALUMNO:
-            case DOCENTE:
-            case ADMINISTRATIVO:
                 return "redirect:/usuario/panel";
             case TECNICO:
                 return "redirect:/tecnico/panel";

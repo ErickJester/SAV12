@@ -205,8 +205,6 @@ public class AdministradorController {
                 desdeDate = ahora.minusWeeks(1);
             } else if ("trimestral".equalsIgnoreCase(periodo)) {
                 desdeDate = ahora.minusMonths(3);
-            } else if ("trimestral".equalsIgnoreCase(periodo)) {
-                desdeDate = ahora.minusMonths(3);
             } else if ("custom".equalsIgnoreCase(periodo) && desde != null && hasta != null) {
                 DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate d = LocalDate.parse(desde, fmt);
@@ -338,7 +336,6 @@ public class AdministradorController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null) {
-            ticketService.asignarTecnico(id, admin, admin);
             ticketService.asignarTecnico(id, admin, admin);
         }
 

@@ -30,9 +30,6 @@ public class TecnicoController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private FileStorageService fileStorageService;
-
     // Panel principal del técnico
     @GetMapping("/panel")
     public String panel(HttpSession session, Model model) {

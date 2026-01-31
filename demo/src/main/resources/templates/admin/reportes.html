@@ -490,6 +490,30 @@
                             <p><i class="bi bi-x-circle"></i> Resolución fuera SLA</p>
                         </div>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card success">
+                            <h4 id="slaPrimeraCumple" th:text="${reporteSLA.ticketsCumplenPrimeraRespuesta}">0</h4>
+                            <p><i class="bi bi-alarm"></i> SLA primera respuesta</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card warning">
+                            <h4 id="slaPrimeraIncumple" th:text="${reporteSLA.ticketsIncumplenPrimeraRespuesta}">0</h4>
+                            <p><i class="bi bi-alarm-fill"></i> Primera respuesta fuera SLA</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card success">
+                            <h4 id="slaResolucionCumple" th:text="${reporteSLA.ticketsCumplenResolucion}">0</h4>
+                            <p><i class="bi bi-check2-circle"></i> SLA resolución</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card warning">
+                            <h4 id="slaResolucionIncumple" th:text="${reporteSLA.ticketsIncumplenResolucion}">0</h4>
+                            <p><i class="bi bi-x-circle"></i> Resolución fuera SLA</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

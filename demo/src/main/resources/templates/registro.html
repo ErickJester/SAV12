@@ -209,9 +209,6 @@
                 <div class="role-box" data-role="ADMINISTRATIVO">
                     <i class="bi bi-briefcase role-box-icon"></i>
                     Administrativo
-                <div class="role-box" data-role="ADMINISTRATIVO">
-                    <i class="bi bi-briefcase role-box-icon"></i>
-                    Administrativo
                 </div>
                 <div class="role-box" data-role="TECNICO">
                     <i class="bi bi-tools role-box-icon"></i>
@@ -249,14 +246,12 @@
                 </div>
 
                 <!-- SOLO ALUMNO -->
-                <!-- SOLO ALUMNO -->
                 <div class="form-group hidden-group" id="boleta-group">
                     <label><i class="bi bi-card-text"></i> Número de boleta</label>
                     <input type="text" th:field="*{boleta}" class="form-control" id="boleta" placeholder="Ejemplo: 2021123456">
                     <small class="text-muted">Tu número de boleta ESCOM</small>
                 </div>
 
-                <!-- SOLO DOCENTE / ADMINISTRATIVO / TECNICO / ADMIN -->
                 <!-- SOLO DOCENTE / ADMINISTRATIVO / TECNICO / ADMIN -->
                 <div class="form-group hidden-group" id="trabajador-group">
                     <label><i class="bi bi-hash"></i> ID de trabajador</label>
@@ -302,7 +297,6 @@
             trabajadorInput.required = false;
 
             // Mostrar según rol
-            if (rol === 'ALUMNO') {
             if (rol === 'ALUMNO') {
                 boletaGroup.classList.add('show');
                 boletaInput.required = true;
