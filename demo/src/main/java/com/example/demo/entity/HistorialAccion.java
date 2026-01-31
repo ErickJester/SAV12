@@ -20,6 +20,9 @@ public class HistorialAccion {
     private Usuario usuario;
 
     @Column(nullable = false)
+    private String tipo;
+
+    @Column(nullable = false)
     private String accion; // "Ticket creado", "Estado cambiado a EN_PROCESO", etc.
 
     @Column(name = "tipo")
@@ -77,6 +80,14 @@ public class HistorialAccion {
 
     public String getAccion() {
         return accion;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 
     public void setAccion(String accion) {

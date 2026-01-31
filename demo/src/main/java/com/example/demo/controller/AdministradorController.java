@@ -205,6 +205,8 @@ public class AdministradorController {
                 desdeDate = ahora.minusWeeks(1);
             } else if ("trimestral".equalsIgnoreCase(periodo)) {
                 desdeDate = ahora.minusMonths(3);
+            } else if ("trimestral".equalsIgnoreCase(periodo)) {
+                desdeDate = ahora.minusMonths(3);
             } else if ("custom".equalsIgnoreCase(periodo) && desde != null && hasta != null) {
                 DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate d = LocalDate.parse(desde, fmt);
@@ -248,16 +250,18 @@ public class AdministradorController {
         if (filtro != null) {
             if ("activo".equalsIgnoreCase(filtro)) {
                 tickets = tickets.stream()
-                        .filter(t -> t.getEstado() == EstadoTicket.ABIERTO || t.getEstado() == EstadoTicket.EN_PROCESO)
+                        .filter(t -> t.getEstado() == EstadoTicket.ABIERTO
+                                || t.getEstado() == EstadoTicket.EN_PROCESO
+                                || t.getEstado() == EstadoTicket.EN_ESPERA)
                         .collect(Collectors.toList());
             } else if ("resuelto".equalsIgnoreCase(filtro)) {
                 tickets = tickets.stream()
-                        .filter(t -> t.getEstado() == EstadoTicket.RESUELTO)
+                        .filter(t -> t.getEstado() == EstadoTicket.RESUELTO || t.getEstado() == EstadoTicket.CERRADO)
                         .collect(Collectors.toList());
             }
         }
 
-        List<Usuario> asignables = usuarioService.obtenerUsuariosAsignables();
+        List<Usuario> tecnicos = usuarioService.obtenerUsuariosAsignables();
 
         model.addAttribute("tickets", tickets);
         model.addAttribute("asignables", asignables);
@@ -315,12 +319,12 @@ public class AdministradorController {
             return "redirect:/login";
         }
 
-        ticketService.reabrirTicketComoAdmin(id, admin);
+        ticketService.reabrirTicket(id, admin);
         return "redirect:/admin/ticket/" + id;
     }
 
     // Asignarme el ticket como administrador
-    @PostMapping({"/ticket/{id}/asignarme", "/tickets/{id}/asignarme"})
+    @PostMapping("/tickets/{id}/asignarme")
     public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
         Usuario admin = (Usuario) session.getAttribute("usuario");
         if (admin == null || admin.getRol() != Rol.ADMIN) {
@@ -329,6 +333,7 @@ public class AdministradorController {
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null) {
+            ticketService.asignarTecnico(id, admin, admin);
             ticketService.asignarTecnico(id, admin, admin);
         }
 
@@ -345,9 +350,9 @@ public class AdministradorController {
             return "redirect:/login";
         }
 
-        Usuario asignado = usuarioService.obtenerPorId(tecnicoId);
-        if (asignado != null && (asignado.getRol() == Rol.TECNICO || asignado.getRol() == Rol.ADMIN)) {
-            ticketService.asignarTecnico(id, asignado, admin);
+        Usuario tecnico = usuarioService.obtenerPorId(tecnicoId);
+        if (tecnico != null && (tecnico.getRol() == Rol.TECNICO || tecnico.getRol() == Rol.ADMIN)) {
+            ticketService.asignarTecnico(id, tecnico, admin);
         }
 
         return "redirect:/admin/tickets?success=assigned";

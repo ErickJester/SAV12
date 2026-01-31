@@ -31,7 +31,9 @@ public class UsuarioService {
     }
 
     public List<Usuario> obtenerUsuariosAsignables() {
-        return usuarioRepository.findByRolIn(List.of(Rol.TECNICO, Rol.ADMIN));
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> usuario.getRol() == Rol.TECNICO || usuario.getRol() == Rol.ADMIN)
+                .toList();
     }
 
     public List<Usuario> obtenerTodosUsuarios() {

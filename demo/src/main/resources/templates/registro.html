@@ -203,9 +203,12 @@
                     Alumno
                 </div>
                 <div class="role-box" data-role="DOCENTE">
-                    <i class="bi bi-easel2 role-box-icon"></i>
+                    <i class="bi bi-journal-bookmark role-box-icon"></i>
                     Docente
                 </div>
+                <div class="role-box" data-role="ADMINISTRATIVO">
+                    <i class="bi bi-briefcase role-box-icon"></i>
+                    Administrativo
                 <div class="role-box" data-role="ADMINISTRATIVO">
                     <i class="bi bi-briefcase role-box-icon"></i>
                     Administrativo
@@ -216,7 +219,7 @@
                 </div>
                 <div class="role-box" data-role="ADMIN">
                     <i class="bi bi-shield-lock role-box-icon"></i>
-                    Admin
+                    Administrador
                 </div>
             </div>
 
@@ -246,12 +249,14 @@
                 </div>
 
                 <!-- SOLO ALUMNO -->
+                <!-- SOLO ALUMNO -->
                 <div class="form-group hidden-group" id="boleta-group">
                     <label><i class="bi bi-card-text"></i> Número de boleta</label>
                     <input type="text" th:field="*{boleta}" class="form-control" id="boleta" placeholder="Ejemplo: 2021123456">
                     <small class="text-muted">Tu número de boleta ESCOM</small>
                 </div>
 
+                <!-- SOLO DOCENTE / ADMINISTRATIVO / TECNICO / ADMIN -->
                 <!-- SOLO DOCENTE / ADMINISTRATIVO / TECNICO / ADMIN -->
                 <div class="form-group hidden-group" id="trabajador-group">
                     <label><i class="bi bi-hash"></i> ID de trabajador</label>
@@ -298,9 +303,10 @@
 
             // Mostrar según rol
             if (rol === 'ALUMNO') {
+            if (rol === 'ALUMNO') {
                 boletaGroup.classList.add('show');
                 boletaInput.required = true;
-            } else if (['DOCENTE', 'ADMINISTRATIVO', 'TECNICO', 'ADMIN'].includes(rol)) {
+            } else if (rol === 'DOCENTE' || rol === 'ADMINISTRATIVO' || rol === 'ADMIN' || rol === 'TECNICO') {
                 trabajadorGroup.classList.add('show');
                 trabajadorInput.required = true;
             }

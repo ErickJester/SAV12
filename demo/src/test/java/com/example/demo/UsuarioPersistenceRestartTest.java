@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.MySQLContainer;
@@ -18,6 +19,7 @@ import com.example.demo.entity.Usuario;
 import com.example.demo.repository.UsuarioRepository;
 
 @Testcontainers
+@Disabled("Requiere Docker para Testcontainers.")
 class UsuarioPersistenceRestartTest {
 
     @Container
