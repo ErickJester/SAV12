@@ -2,6 +2,7 @@ package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -23,14 +24,22 @@ public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
-    // =========================
-    // REPOSITORY
-    // =========================
     @Autowired
     private UsuarioService usuarioService;
 
     @Autowired
     private com.example.demo.service.EmailService emailService;
+
+    // =========================
+    // helpers
+    // =========================
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private static String norm(String s) {
+        return isBlank(s) ? null : s.trim();
+    }
 
     // =========================
     // RUTA RAÍZ → LOGIN
@@ -58,10 +67,16 @@ public class HomeController {
             HttpSession session,
             Model model
     ) {
+        String correoNorm = norm(correo);
+
+        if (correoNorm == null) {
+            model.addAttribute("mensaje", "Correo requerido");
+            return "login";
+        }
 
         Usuario usuario = null;
         try {
-            usuario = usuarioService.obtenerPorCorreo(correo);
+            usuario = usuarioService.obtenerPorCorreo(correoNorm);
         } catch (DataAccessException dae) {
             logger.error("DB error while finding user by correo: {}", dae.getMessage());
             model.addAttribute("mensaje", "Error de conexión a la base de datos. Intenta de nuevo más tarde.");
@@ -73,6 +88,7 @@ public class HomeController {
             return "login";
         }
 
+        // Nota: lo de password hash lo dejas para el final, así que aquí sigue el equals crudo.
         if (!usuario.getPasswordHash().equals(password)) {
             model.addAttribute("mensaje", "Contraseña incorrecta");
             return "login";
@@ -83,13 +99,10 @@ public class HomeController {
             return "login";
         }
 
-        // Guardar usuario en sesión
         session.setAttribute("usuario", usuario);
 
-        // Enviar correo de confirmación de inicio de sesión (si está habilitado)
         emailService.sendLoginConfirmation(usuario);
 
-        // Redirigir según el rol
         switch (usuario.getRol()) {
             case ALUMNO:
             case DOCENTE:
@@ -128,16 +141,38 @@ public class HomeController {
     @PostMapping("/registro")
     public String procesarRegistro(@ModelAttribute RegistroDTO registro, Model model) {
 
-        // Validar correo duplicado
-        if (usuarioService.existeCorreo(registro.getCorreo())) {
-            model.addAttribute("mensaje", "El correo ya está registrado.");
+        // --- normalización ---
+        String nombre = norm(registro.getNombre());
+        String correo = norm(registro.getCorreo());
+        String rolRaw = norm(registro.getRol());
+        String boleta = norm(registro.getBoleta());
+        String idTrab = norm(registro.getIdTrabajador());
+
+        // Validaciones básicas mínimas (sin inventarte “validaciones bonitas”)
+        if (nombre == null) {
+            model.addAttribute("mensaje", "Nombre requerido.");
+            model.addAttribute("registro", registro);
+            return "registro";
+        }
+        if (correo == null) {
+            model.addAttribute("mensaje", "Correo requerido.");
             model.addAttribute("registro", registro);
             return "registro";
         }
 
         // Validar selección de rol
-        if (registro.getRol() == null || registro.getRol().isEmpty()) {
+        if (rolRaw == null) {
             model.addAttribute("mensaje", "Selecciona el tipo de cuenta.");
+            model.addAttribute("registro", registro);
+            return "registro";
+        }
+
+        // Parse rol a enum (acepta si viene en mayúsculas; si no, lo forzamos)
+        Rol rol;
+        try {
+            rol = Rol.valueOf(rolRaw.trim().toUpperCase());
+        } catch (Exception e) {
+            model.addAttribute("mensaje", "Tipo de cuenta inválido.");
             model.addAttribute("registro", registro);
             return "registro";
         }
@@ -149,32 +184,80 @@ public class HomeController {
             return "registro";
         }
 
-        // Crear entidad Usuario
-        Usuario usuario = new Usuario();
-        usuario.setNombre(registro.getNombre());
-        usuario.setCorreo(registro.getCorreo());
-        usuario.setPasswordHash(registro.getPassword()); // luego se encripta
-        try {
-            usuario.setRol(Rol.valueOf(registro.getRol()));
-        } catch (Exception e) {
-            model.addAttribute("mensaje", "Tipo de cuenta inválido.");
+        // Validar correo duplicado (usando correo normalizado)
+        if (usuarioService.existeCorreo(correo)) {
+            model.addAttribute("mensaje", "El correo ya está registrado.");
             model.addAttribute("registro", registro);
             return "registro";
         }
 
-        // Asignar boleta o id_trabajador según rol
-        if (registro.getRol().equals("ALUMNO")) {
-            usuario.setBoleta(registro.getBoleta());
+        // =========================
+        // VALIDACIÓN FUERTE POR ROL
+        // =========================
+        if (rol == Rol.ALUMNO) {
+
+            if (boleta == null) {
+                model.addAttribute("mensaje", "Boleta requerida para cuenta ALUMNO.");
+                model.addAttribute("registro", registro);
+                return "registro";
+            }
+            if (idTrab != null) {
+                model.addAttribute("mensaje", "No debes capturar ID de trabajador para cuenta ALUMNO.");
+                model.addAttribute("registro", registro);
+                return "registro";
+            }
+            if (usuarioService.existeBoleta(boleta)) {
+                model.addAttribute("mensaje", "La boleta ya está registrada.");
+                model.addAttribute("registro", registro);
+                return "registro";
+            }
+
+        } else { // DOCENTE / TECNICO / ADMIN / ADMINISTRATIVO
+
+            if (idTrab == null) {
+                model.addAttribute("mensaje", "ID de trabajador requerido para este tipo de cuenta.");
+                model.addAttribute("registro", registro);
+                return "registro";
+            }
+            if (boleta != null) {
+                model.addAttribute("mensaje", "No debes capturar boleta para este tipo de cuenta.");
+                model.addAttribute("registro", registro);
+                return "registro";
+            }
+            if (usuarioService.existeIdTrabajador(idTrab)) {
+                model.addAttribute("mensaje", "El ID de trabajador ya está registrado.");
+                model.addAttribute("registro", registro);
+                return "registro";
+            }
+        }
+
+        // Crear entidad Usuario
+        Usuario usuario = new Usuario();
+        usuario.setNombre(nombre);
+        usuario.setCorreo(correo);
+        usuario.setPasswordHash(registro.getPassword()); // lo dejas así por ahora
+        usuario.setRol(rol);
+
+        // Asignación consistente (nunca ambos)
+        if (rol == Rol.ALUMNO) {
+            usuario.setBoleta(boleta);
             usuario.setIdTrabajador(null);
         } else {
-            usuario.setIdTrabajador(registro.getIdTrabajador());
+            usuario.setIdTrabajador(idTrab);
             usuario.setBoleta(null);
         }
 
         try {
             usuarioService.guardarUsuario(usuario);
-            // Enviar correo de bienvenida tras registro exitoso
             emailService.sendWelcomeEmail(usuario);
+
+        } catch (DataIntegrityViolationException dive) {
+            // si se coló por carrera o por UNIQUE constraints, lo manejas sin reventar
+            logger.error("Integrity violation while saving new user: {}", dive.getMessage());
+            model.addAttribute("mensaje", "Datos duplicados. Verifica correo/boleta/id de trabajador.");
+            model.addAttribute("registro", registro);
+            return "registro";
+
         } catch (DataAccessException dae) {
             logger.error("DB error while saving new user: {}", dae.getMessage());
             model.addAttribute("mensaje", "Error de conexión a la base de datos. Intenta de nuevo más tarde.");

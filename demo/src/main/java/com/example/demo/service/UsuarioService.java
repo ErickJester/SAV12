@@ -49,4 +49,13 @@ public class UsuarioService {
         usuario.setActivo(activo);
         usuarioRepository.save(usuario);
     }
+
+    public boolean existeBoleta(String boleta) {
+        return usuarioRepository.existsByBoleta(boleta);
+    }
+
+    public boolean existeIdTrabajador(String idTrabajador) {
+        return usuarioRepository.existsByIdTrabajador(idTrabajador);
+    }
+
 }
