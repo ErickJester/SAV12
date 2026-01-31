@@ -30,7 +30,8 @@ public class ReporteService {
         int ticketsIncumplenResolucion = 0;
 
         for (Ticket ticket : todosTickets) {
-            if (ticket.getFechaResolucion() != null) {
+            if ((ticket.getEstado() == EstadoTicket.RESUELTO || ticket.getEstado() == EstadoTicket.CERRADO)
+                    && ticket.getFechaResolucion() != null) {
                 totalTickets++;
                 SlaResultado resultado = evaluarSla(ticket);
                 if (resultado.cumplePrimeraRespuesta) {
@@ -204,7 +205,8 @@ public class ReporteService {
         int ticketsIncumplenResolucion = 0;
 
         for (Ticket ticket : todosTickets) {
-            if (ticket.getFechaResolucion() != null) {
+            if ((ticket.getEstado() == EstadoTicket.RESUELTO || ticket.getEstado() == EstadoTicket.CERRADO)
+                    && ticket.getFechaResolucion() != null) {
                 totalTickets++;
                 SlaResultado resultado = evaluarSla(ticket);
                 if (resultado.cumplePrimeraRespuesta) {
@@ -267,8 +269,9 @@ public class ReporteService {
 
     private List<Map<String, Object>> obtenerTopCategorias(List<Ticket> tickets) {
         return tickets.stream()
-                .filter(t -> t.getCategoria() != null)
-                .collect(Collectors.groupingBy(t -> t.getCategoria().getNombre(), Collectors.counting()))
+                .collect(Collectors.groupingBy(t -> t.getCategoria() != null
+                        ? t.getCategoria().getNombre()
+                        : "Sin categoría", Collectors.counting()))
                 .entrySet()
                 .stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))

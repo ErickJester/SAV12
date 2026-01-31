@@ -139,6 +139,18 @@ public class TecnicoController {
         return "redirect:/tecnico/ticket/" + id;
     }
 
+    // Reabrir ticket
+    @PostMapping("/ticket/{id}/reabrir")
+    public String reabrirTicket(@PathVariable Long id, HttpSession session) {
+        Usuario tecnico = (Usuario) session.getAttribute("usuario");
+        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
+            return "redirect:/login";
+        }
+
+        ticketService.reabrirTicket(id, tecnico);
+        return "redirect:/tecnico/ticket/" + id;
+    }
+
     // Asignarme un ticket
     @PostMapping("/ticket/{id}/asignar")
     public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
