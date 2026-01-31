@@ -6,5 +6,6 @@ public enum EstadoTicket {
     EN_ESPERA,
     RESUELTO,
     CERRADO,
-    CANCELADO
+    CANCELADO,
+    REABIERTO
 }

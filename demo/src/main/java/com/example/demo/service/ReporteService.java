@@ -21,7 +21,32 @@ public class ReporteService {
 
     public Map<String, Object> generarReporteSLA() {
         List<Ticket> todosTickets = ticketRepository.findAll();
-        return construirReporteSLA(todosTickets);
+        int totalTickets = todosTickets.size();
+        int ticketsCumplenSLA = 0;
+        int ticketsIncumplenSLA = 0;
+
+        for (Ticket ticket : todosTickets) {
+            if (ticket.getFechaResolucion() != null) {
+                if (cumpleSla(ticket)) {
+                    ticketsCumplenSLA++;
+                } else {
+                    ticketsIncumplenSLA++;
+                }
+            }
+        }
+
+        reporte.put("totalTickets", totalTickets);
+        reporte.put("ticketsCumplenSLA", ticketsCumplenSLA);
+        reporte.put("ticketsIncumplenSLA", ticketsIncumplenSLA);
+        
+        if (totalTickets > 0) {
+            double porcentajeCumplimiento = (ticketsCumplenSLA * 100.0) / totalTickets;
+            reporte.put("porcentajeCumplimiento", String.format("%.2f", porcentajeCumplimiento));
+        } else {
+            reporte.put("porcentajeCumplimiento", "0.00");
+        }
+
+        return reporte;
     }
 
     public Map<String, Long> generarReportePorEstado() {
@@ -138,27 +163,10 @@ public class ReporteService {
         int resolucionIncumplen = 0;
         int resolucionTotal = 0;
 
-        for (Ticket ticket : tickets) {
-            Integer slaPrimeraRespuestaMin = ticket.getTiempoRespuestaSLA();
-            Integer tiempoPrimeraRespuestaSeg = ticket.getTiempoPrimeraRespuestaSeg();
-            if (ticket.getFechaPrimeraRespuesta() != null
-                    && tiempoPrimeraRespuestaSeg != null
-                    && slaPrimeraRespuestaMin != null) {
-                primeraRespuestaTotal++;
-                if (tiempoPrimeraRespuestaSeg <= slaPrimeraRespuestaMin * 60L) {
-                    primeraRespuestaCumplen++;
-                } else {
-                    primeraRespuestaIncumplen++;
-                }
-            }
-
-            Integer tiempoResolucionSeg = ticket.getTiempoResolucionSeg();
-            if (tiempoResolucionSeg != null && slaPrimeraRespuestaMin != null) {
-                int tiempoEsperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
-                long resolucionEfectivaSeg = Math.max(0L, (long) tiempoResolucionSeg - tiempoEsperaSeg);
-                resolucionTotal++;
-                if (resolucionEfectivaSeg <= slaPrimeraRespuestaMin * 60L) {
-                    resolucionCumplen++;
+        for (Ticket ticket : todosTickets) {
+            if (ticket.getFechaResolucion() != null) {
+                if (cumpleSla(ticket)) {
+                    ticketsCumplenSLA++;
                 } else {
                     resolucionIncumplen++;
                 }
@@ -178,34 +186,25 @@ public class ReporteService {
         return reporte;
     }
 
-    private String formatearPorcentaje(int cumplen, int total) {
-        if (total > 0) {
-            double porcentaje = (cumplen * 100.0) / total;
-            return String.format("%.2f", porcentaje);
+    private boolean cumpleSla(Ticket ticket) {
+        if (ticket.getSlaPolitica() == null) {
+            return false;
         }
-        return "0.00";
-    }
 
-    private List<Map<String, Object>> construirTopCategorias(List<Ticket> tickets) {
-        return tickets.stream()
-                .collect(Collectors.groupingBy(ticket -> {
-                    if (ticket.getCategoria() == null || ticket.getCategoria().getNombre() == null) {
-                        return "Sin categoría";
-                    }
-                    String nombre = ticket.getCategoria().getNombre().trim();
-                    return nombre.isEmpty() ? "Sin categoría" : nombre;
-                }, Collectors.counting()))
-                .entrySet()
-                .stream()
-                .sorted(Entry.<String, Long>comparingByValue().reversed()
-                        .thenComparing(Entry.comparingByKey()))
-                .limit(5)
-                .map(entry -> {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("nombre", entry.getKey());
-                    item.put("cantidad", entry.getValue());
-                    return item;
-                })
-                .collect(Collectors.toList());
+        Integer tiempoPrimeraRespuestaSeg = ticket.getTiempoPrimeraRespuestaSeg();
+        Integer tiempoResolucionSeg = ticket.getTiempoResolucionSeg();
+        if (tiempoPrimeraRespuestaSeg == null || tiempoResolucionSeg == null) {
+            return false;
+        }
+
+        int slaPrimeraRespuestaSeg = ticket.getSlaPolitica().getSlaPrimeraRespuestaMin() * 60;
+        int slaResolucionSeg = ticket.getSlaPolitica().getSlaResolucionMin() * 60;
+        int tiempoEsperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
+        int resolucionEfectivaSeg = Math.max(0, tiempoResolucionSeg - tiempoEsperaSeg);
+
+        boolean cumplePrimeraRespuesta = tiempoPrimeraRespuestaSeg <= slaPrimeraRespuestaSeg;
+        boolean cumpleResolucion = resolucionEfectivaSeg <= slaResolucionSeg;
+
+        return cumplePrimeraRespuesta && cumpleResolucion;
     }
 }

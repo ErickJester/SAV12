@@ -73,7 +73,7 @@ public class HomeController {
             return "login";
         }
 
-        if (usuario.getPasswordHash() == null || !usuario.getPasswordHash().equals(password)) {
+        if (!usuario.getPasswordHash().equals(password)) {
             model.addAttribute("mensaje", "Contraseña incorrecta");
             return "login";
         }
@@ -91,6 +91,9 @@ public class HomeController {
 
         // Redirigir según el rol
         switch (usuario.getRol()) {
+            case ALUMNO:
+            case DOCENTE:
+            case ADMINISTRATIVO:
             case ALUMNO:
             case DOCENTE:
             case ADMINISTRATIVO:
@@ -154,6 +157,7 @@ public class HomeController {
         usuario.setNombre(registro.getNombre());
         usuario.setCorreo(registro.getCorreo());
         usuario.setPasswordHash(registro.getPassword()); // luego se encripta
+        usuario.setPasswordHash(registro.getPassword()); // luego se encripta
         try {
             usuario.setRol(Rol.valueOf(registro.getRol()));
         } catch (Exception e) {
@@ -163,6 +167,7 @@ public class HomeController {
         }
 
         // Asignar boleta o id_trabajador según rol
+        if (registro.getRol().equals("ALUMNO")) {
         if (registro.getRol().equals("ALUMNO")) {
             usuario.setBoleta(registro.getBoleta());
             usuario.setIdTrabajador(null);

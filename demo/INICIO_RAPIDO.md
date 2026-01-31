@@ -12,7 +12,7 @@
 La configuración está en `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:mysql://sav12.cj4iq8uc8saj.mx-central-1.rds.amazonaws.com:3306/sav12
+spring.datasource.url=jdbc:mysql://localhost:3306/sav12
 spring.datasource.username=admin
 spring.datasource.password=password
 ```

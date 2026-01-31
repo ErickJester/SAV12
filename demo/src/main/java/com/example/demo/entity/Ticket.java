@@ -80,8 +80,6 @@ public class Ticket {
     @Column(name = "reabierto_count")
     private Integer reabiertoCount = 0;
 
-    @Column(name = "tiempo_respuesta_sla")
-    private Integer tiempoRespuestaSLA = 24; // horas
 
     // Constructores
     public Ticket() {}
@@ -263,11 +261,4 @@ public class Ticket {
         this.reabiertoCount = reabiertoCount;
     }
 
-    public Integer getTiempoRespuestaSLA() {
-        return tiempoRespuestaSLA;
-    }
-
-    public void setTiempoRespuestaSLA(Integer tiempoRespuestaSLA) {
-        this.tiempoRespuestaSLA = tiempoRespuestaSLA;
-    }
 }
