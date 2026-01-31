@@ -6,6 +6,7 @@ import com.example.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -31,7 +32,7 @@ public class UsuarioService {
     }
 
     public List<Usuario> obtenerUsuariosAsignables() {
-        return usuarioRepository.findByRolIn(List.of(Rol.TECNICO, Rol.ADMIN));
+        return usuarioRepository.findByRolInAndActivoTrue(Arrays.asList(Rol.TECNICO, Rol.ADMIN));
     }
 
     public List<Usuario> obtenerTodosUsuarios() {

@@ -155,10 +155,12 @@ public class UsuarioController {
         }
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
-        if (ticket != null
-                && (ticket.getCreadoPor().getId().equals(usuario.getId()) || esStaff(usuario))
-                && (ticket.getEstado() == EstadoTicket.CERRADO || ticket.getEstado() == EstadoTicket.RESUELTO)) {
-            ticketService.reabrirTicket(id, usuario);
+        if (ticket != null && ticket.getCreadoPor().getId().equals(usuario.getId())) {
+            if (ticket.getEstado() == EstadoTicket.CERRADO
+                    || ticket.getEstado() == EstadoTicket.RESUELTO
+                    || ticket.getEstado() == EstadoTicket.CANCELADO) {
+                ticketService.reabrirTicket(id, usuario);
+            }
         }
 
         return "redirect:/usuario/ticket/" + id;
