@@ -6,7 +6,6 @@ import com.example.demo.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -29,12 +28,7 @@ public class ReporteService {
 
         for (Ticket ticket : todosTickets) {
             if (ticket.getFechaResolucion() != null) {
-                long horasRespuesta = Duration.between(
-                    ticket.getFechaCreacion(), 
-                    ticket.getFechaResolucion()
-                ).toHours();
-
-                if (horasRespuesta <= ticket.getTiempoRespuestaSLA()) {
+                if (cumpleSla(ticket)) {
                     ticketsCumplenSLA++;
                 } else {
                     ticketsIncumplenSLA++;
@@ -125,12 +119,7 @@ public class ReporteService {
 
         for (Ticket ticket : todosTickets) {
             if (ticket.getFechaResolucion() != null) {
-                long horasRespuesta = Duration.between(
-                        ticket.getFechaCreacion(),
-                        ticket.getFechaResolucion()
-                ).toHours();
-
-                if (horasRespuesta <= ticket.getTiempoRespuestaSLA()) {
+                if (cumpleSla(ticket)) {
                     ticketsCumplenSLA++;
                 } else {
                     ticketsIncumplenSLA++;
@@ -150,5 +139,27 @@ public class ReporteService {
         }
 
         return reporte;
+    }
+
+    private boolean cumpleSla(Ticket ticket) {
+        if (ticket.getSlaPolitica() == null) {
+            return false;
+        }
+
+        Integer tiempoPrimeraRespuestaSeg = ticket.getTiempoPrimeraRespuestaSeg();
+        Integer tiempoResolucionSeg = ticket.getTiempoResolucionSeg();
+        if (tiempoPrimeraRespuestaSeg == null || tiempoResolucionSeg == null) {
+            return false;
+        }
+
+        int slaPrimeraRespuestaSeg = ticket.getSlaPolitica().getSlaPrimeraRespuestaMin() * 60;
+        int slaResolucionSeg = ticket.getSlaPolitica().getSlaResolucionMin() * 60;
+        int tiempoEsperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
+        int resolucionEfectivaSeg = Math.max(0, tiempoResolucionSeg - tiempoEsperaSeg);
+
+        boolean cumplePrimeraRespuesta = tiempoPrimeraRespuestaSeg <= slaPrimeraRespuestaSeg;
+        boolean cumpleResolucion = resolucionEfectivaSeg <= slaResolucionSeg;
+
+        return cumplePrimeraRespuesta && cumpleResolucion;
     }
 }

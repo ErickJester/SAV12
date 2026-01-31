@@ -37,7 +37,7 @@ public class UsuarioController {
     @GetMapping("/panel")
     public String panel(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -54,7 +54,7 @@ public class UsuarioController {
     @GetMapping("/crear-ticket")
     public String mostrarFormularioCrearTicket(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -70,7 +70,7 @@ public class UsuarioController {
                              @RequestParam(value = "archivoEvidencia", required = false) org.springframework.web.multipart.MultipartFile archivo,
                              HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -95,7 +95,7 @@ public class UsuarioController {
     @GetMapping("/mis-tickets")
     public String misTickets(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -109,7 +109,7 @@ public class UsuarioController {
     @GetMapping("/ticket/{id}")
     public String verDetalleTicket(@PathVariable Long id, HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -134,7 +134,7 @@ public class UsuarioController {
                                      @RequestParam String contenido,
                                      HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -150,7 +150,7 @@ public class UsuarioController {
     @PostMapping("/ticket/{id}/reabrir")
     public String reabrirTicket(@PathVariable Long id, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null || usuario.getRol() != Rol.USUARIO) {
+        if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
@@ -162,5 +162,11 @@ public class UsuarioController {
         }
 
         return "redirect:/usuario/ticket/" + id;
+    }
+
+    private boolean esUsuarioFinal(Usuario usuario) {
+        return usuario != null && (usuario.getRol() == Rol.ALUMNO
+            || usuario.getRol() == Rol.DOCENTE
+            || usuario.getRol() == Rol.ADMINISTRATIVO);
     }
 }

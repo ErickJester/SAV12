@@ -318,7 +318,7 @@
                     </div>
                     <div class="info-item">
                         <strong>Usuario</strong>
-                        <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                        <span th:text="${ticket.creadoPor.nombre}">Usuario</span>
                     </div>
                     <div class="info-item">
                         <strong>Categoría</strong>
@@ -344,11 +344,19 @@
                 </div>
 
                 <!-- Evidencia -->
-                <div th:if="${ticket.evidencia != null and !ticket.evidencia.isEmpty()}" class="section-card">
-                    <h3 class="section-title">Evidencia Adjunta</h3>
+                <div th:if="${ticket.evidenciaProblema != null and !ticket.evidenciaProblema.isEmpty()}" class="section-card">
+                    <h3 class="section-title">Evidencia del Problema</h3>
                     <div class="evidence-image">
-                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidencia})}" 
-                             alt="Evidencia del ticket">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaProblema})}" 
+                             alt="Evidencia del problema">
+                    </div>
+                </div>
+
+                <div th:if="${ticket.evidenciaResolucion != null and !ticket.evidenciaResolucion.isEmpty()}" class="section-card">
+                    <h3 class="section-title">Evidencia de Resolución</h3>
+                    <div class="evidence-image">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaResolucion})}" 
+                             alt="Evidencia de resolución">
                     </div>
                 </div>
 
@@ -358,7 +366,7 @@
                     <div class="ticket-grid">
                         <div class="info-item">
                             <strong>Técnico Asignado</strong>
-                            <span th:text="${ticket.tecnico != null ? ticket.tecnico.nombre : 'Aún sin asignar'}">Sin asignar</span>
+                            <span th:text="${ticket.asignadoA != null ? ticket.asignadoA.nombre : 'Aún sin asignar'}">Sin asignar</span>
                         </div>
                         <div class="info-item">
                             <strong>Última Actualización</strong>
