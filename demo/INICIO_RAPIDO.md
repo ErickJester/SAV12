@@ -12,24 +12,24 @@
 La configuración está en `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:mysql://sav12.cj4iq8uc8saj.mx-central-1.rds.amazonaws.com:3306/sav12
-spring.datasource.username=admin
-spring.datasource.password=password
+spring.datasource.url=jdbc:mysql://localhost:3306/sav12_app
+spring.datasource.username=root
+spring.datasource.password=root
 ```
 
 Si usas una base de datos local, cambia a:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/sav12
+spring.datasource.url=jdbc:mysql://localhost:3306/sav12_app
 spring.datasource.username=tu_usuario
 spring.datasource.password=tu_contraseña
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=none
 ```
 
 ### 3. Crear Base de Datos
 
 ```sql
-CREATE DATABASE IF NOT EXISTS sav12 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS sav12_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ### 4. Ejecutar Script de Inicialización (Opcional)

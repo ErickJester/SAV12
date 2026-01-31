@@ -58,6 +58,11 @@
             border: 1px solid rgba(255,255,255,0.5);
         }
 
+        .status-badge.REABIERTO {
+            background: #f59e0b;
+            color: white;
+        }
+
         .status-badge.EN_PROCESO {
             background: #3b82f6;
             color: white;
@@ -444,12 +449,22 @@
                     </div>
                 </div>
 
+                <div th:if="${ticket.evidenciaResolucion != null and !ticket.evidenciaResolucion.isEmpty()}" class="card-custom">
+                    <h3 class="card-title">
+                        <i class="bi bi-image"></i> Evidencia de Resolución
+                    </h3>
+                    <div class="evidence-section">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaResolucion})}" 
+                             alt="Evidencia de resolución">
+                    </div>
+                </div>
+
                 <!-- Cambiar Estado -->
                 <div class="card-custom">
                     <h3 class="card-title">
                         <i class="bi bi-arrow-repeat"></i> Cambiar Estado del Ticket
                     </h3>
-                    <form th:action="@{/tecnico/ticket/{id}/cambiar-estado(id=${ticket.id})}" method="post">
+                    <form th:action="@{/tecnico/ticket/{id}/cambiar-estado(id=${ticket.id})}" method="post" enctype="multipart/form-data">
                         <div class="form-section">
                             <label for="nuevoEstado">Nuevo Estado:</label>
                             <select name="nuevoEstado" id="nuevoEstado" class="form-control" required>
@@ -463,11 +478,23 @@
                             <label for="observaciones" style="margin-top: 15px;">Observaciones / Notas Técnicas:</label>
                             <textarea name="observaciones" id="observaciones" rows="4" class="form-control" 
                                       placeholder="Describe las acciones realizadas o razón del cambio de estado..."></textarea>
+
+                            <label for="evidenciaResolucion" style="margin-top: 15px;">Evidencia de resolución (opcional)</label>
+                            <input type="file" name="evidenciaResolucion" id="evidenciaResolucion" class="form-control" accept="image/*">
                             
                             <button type="submit" class="btn-action btn-primary-custom" style="width: 100%;">
                                 <i class="bi bi-check-lg"></i> Actualizar Estado
                             </button>
                         </div>
+                    </form>
+                </div>
+
+                <!-- Reabrir Ticket -->
+                <div th:if="${ticket.estado.name() == 'RESUELTO' || ticket.estado.name() == 'CERRADO'}" class="card-custom" style="background: #fef3c7;">
+                    <form th:action="@{/tecnico/ticket/{id}/reabrir(id=${ticket.id})}" method="post">
+                        <button type="submit" class="btn-action btn-secondary-custom" style="width: 100%;">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reabrir Ticket
+                        </button>
                     </form>
                 </div>
 
@@ -491,7 +518,7 @@
                             <div class="comment-header">
                                 <div>
                                     <strong th:text="${comentario.usuario.nombre}">Usuario</strong>
-                                    <span class="comment-role" th:text="${comentario.usuario.rol}">USUARIO</span>
+                                    <span class="comment-role" th:text="${comentario.usuario.rol}">ROL</span>
                                 </div>
                                 <span class="comment-date" th:text="${#temporals.format(comentario.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
                             </div>

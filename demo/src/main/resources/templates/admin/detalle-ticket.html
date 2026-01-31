@@ -32,6 +32,11 @@
             border: 1px solid rgba(255,255,255,0.5);
         }
 
+        .badge.REABIERTO {
+            background: #f59e0b;
+            color: white;
+        }
+
         .badge.EN_PROCESO {
             background: #3b82f6;
             color: white;
@@ -318,7 +323,7 @@
                     </div>
                     <div class="info-item">
                         <strong>Usuario</strong>
-                        <span th:text="${ticket.usuario.nombre}">Usuario</span>
+                        <span th:text="${ticket.creadoPor.nombre}">Usuario</span>
                     </div>
                     <div class="info-item">
                         <strong>Categoría</strong>
@@ -344,11 +349,19 @@
                 </div>
 
                 <!-- Evidencia -->
-                <div th:if="${ticket.evidencia != null and !ticket.evidencia.isEmpty()}" class="section-card">
-                    <h3 class="section-title">Evidencia Adjunta</h3>
+                <div th:if="${ticket.evidenciaProblema != null and !ticket.evidenciaProblema.isEmpty()}" class="section-card">
+                    <h3 class="section-title">Evidencia del Problema</h3>
                     <div class="evidence-image">
-                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidencia})}" 
-                             alt="Evidencia del ticket">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaProblema})}" 
+                             alt="Evidencia del problema">
+                    </div>
+                </div>
+
+                <div th:if="${ticket.evidenciaResolucion != null and !ticket.evidenciaResolucion.isEmpty()}" class="section-card">
+                    <h3 class="section-title">Evidencia de Resolución</h3>
+                    <div class="evidence-image">
+                        <img th:src="@{/uploads/{filename}(filename=${ticket.evidenciaResolucion})}" 
+                             alt="Evidencia de resolución">
                     </div>
                 </div>
 
@@ -358,7 +371,7 @@
                     <div class="ticket-grid">
                         <div class="info-item">
                             <strong>Técnico Asignado</strong>
-                            <span th:text="${ticket.tecnico != null ? ticket.tecnico.nombre : 'Aún sin asignar'}">Sin asignar</span>
+                            <span th:text="${ticket.asignadoA != null ? ticket.asignadoA.nombre : 'Aún sin asignar'}">Sin asignar</span>
                         </div>
                         <div class="info-item">
                             <strong>Última Actualización</strong>
@@ -370,7 +383,7 @@
                 <!-- Asignarme el ticket -->
                 <div class="section-card" th:if="${usuario.rol.name() == 'ADMIN'}">
                     <h3 class="section-title">Asignación</h3>
-                    <form th:action="@{/admin/ticket/{id}/asignarme(id=${ticket.id})}" method="post">
+                    <form th:action="@{/admin/tickets/{id}/asignarme(id=${ticket.id})}" method="post">
                         <button type="submit" class="btn btn-primary" style="width: 100%;">
                             <i class="bi bi-person-check"></i> Asignarme a mí mismo
                         </button>
@@ -441,6 +454,7 @@
                         <i class="bi bi-info-circle"></i>
                         <span th:switch="${ticket.estado.name()}">
                             <span th:case="'ABIERTO'">El ticket está abierto y pendiente de ser asignado a un técnico.</span>
+                            <span th:case="'REABIERTO'">El ticket fue reabierto y requiere nueva atención.</span>
                             <span th:case="'EN_PROCESO'">Un técnico está trabajando en este ticket.</span>
                             <span th:case="'RESUELTO'">El ticket ha sido resuelto. Puedes reabrirlo si es necesario.</span>
                             <span th:case="'CERRADO'">El ticket fue cerrado. Puedes reabrirlo si es necesario.</span>

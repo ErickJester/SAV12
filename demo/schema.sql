@@ -1,9 +1,9 @@
 -- Script SQL para crear el esquema completo de SAV12
--- Base de datos: sav12
+-- Base de datos: sav12_app
 
 -- Crear la base de datos si no existe
-CREATE DATABASE IF NOT EXISTS sav12 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE sav12;
+CREATE DATABASE IF NOT EXISTS sav12_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE sav12_app;
 
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     UNIQUE KEY uq_usuarios_id_trabajador (id_trabajador),
     INDEX idx_correo (correo),
     INDEX idx_rol (rol),
-    CONSTRAINT chk_usuarios_rol CHECK (rol IN ('USUARIO', 'TECNICO', 'ADMIN', 'COORDINADOR', 'SUPERVISOR'))
+    CONSTRAINT chk_usuarios_rol CHECK (rol IN ('ALUMNO', 'DOCENTE', 'ADMINISTRATIVO', 'TECNICO', 'ADMIN'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de categorías
@@ -45,13 +45,13 @@ CREATE TABLE IF NOT EXISTS ubicaciones (
 -- Tabla de políticas de SLA
 CREATE TABLE IF NOT EXISTS sla_politicas (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
-    descripcion TEXT,
-    tiempo_respuesta_horas INT NOT NULL,
-    tiempo_resolucion_horas INT NOT NULL,
+    rol_solicitante VARCHAR(50) NOT NULL,
+    sla_primera_respuesta_min INT NOT NULL,
+    sla_resolucion_min INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
-    fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_activo (activo)
+    UNIQUE KEY uq_sla_rol (rol_solicitante),
+    INDEX idx_sla_rol (rol_solicitante),
+    INDEX idx_sla_activo (activo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de tickets
@@ -59,27 +59,30 @@ CREATE TABLE IF NOT EXISTS tickets (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     titulo VARCHAR(255) NOT NULL,
     descripcion TEXT,
-    estado VARCHAR(50) NOT NULL DEFAULT 'ABIERTO',
+    estado ENUM('ABIERTO', 'REABIERTO', 'EN_PROCESO', 'EN_ESPERA', 'RESUELTO', 'CERRADO', 'CANCELADO') NOT NULL DEFAULT 'ABIERTO',
     prioridad VARCHAR(50) DEFAULT 'MEDIA',
     creado_por_id BIGINT NOT NULL,
     asignado_a_id BIGINT,
     categoria_id BIGINT,
     ubicacion_id BIGINT,
-    sla_politica_id BIGINT NOT NULL,
+    sla_politica_id BIGINT,
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion DATETIME,
-    fecha_asignacion DATETIME,
     fecha_primera_respuesta DATETIME,
     fecha_resolucion DATETIME,
-    evidencia_usuario VARCHAR(500),
-    evidencia_tecnico VARCHAR(500),
-    tiempo_respuesta_minutos INT,
-    tiempo_resolucion_minutos INT,
+    fecha_cierre DATETIME,
+    evidencia_problema VARCHAR(500),
+    evidencia_resolucion VARCHAR(500),
+    tiempo_primera_respuesta_seg INT,
+    tiempo_resolucion_seg INT,
+    tiempo_espera_seg INT NOT NULL DEFAULT 0,
+    espera_desde DATETIME,
+    reabierto_count INT NOT NULL DEFAULT 0,
     FOREIGN KEY (creado_por_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (asignado_a_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE SET NULL,
     FOREIGN KEY (ubicacion_id) REFERENCES ubicaciones(id) ON DELETE SET NULL,
-    FOREIGN KEY (sla_politica_id) REFERENCES sla_politicas(id) ON DELETE RESTRICT,
+    FOREIGN KEY (sla_politica_id) REFERENCES sla_politicas(id) ON DELETE SET NULL,
     INDEX idx_creado_por (creado_por_id),
     INDEX idx_asignado_a (asignado_a_id),
     INDEX idx_estado (estado),
@@ -152,11 +155,11 @@ INSERT INTO ubicaciones (edificio, piso, salon, activo) VALUES
 ('Edificio Oeste', 'Primer Piso', 'Auditorio', true);
 
 -- Insertar políticas SLA de ejemplo
-INSERT INTO sla_politicas (nombre, descripcion, tiempo_respuesta_horas, tiempo_resolucion_horas, activo) VALUES
-('ALTA', 'Prioridad alta con respuesta rápida', 4, 24, true),
-('MEDIA', 'Prioridad estándar para la mayoría de los tickets', 8, 48, true),
-('BAJA', 'Prioridad baja con tiempos extendidos', 24, 120, true)
-ON DUPLICATE KEY UPDATE nombre=nombre;
+INSERT INTO sla_politicas (rol_solicitante, sla_primera_respuesta_min, sla_resolucion_min, activo) VALUES
+('ALUMNO', 240, 1440, true),
+('DOCENTE', 180, 1200, true),
+('ADMINISTRATIVO', 180, 1200, true)
+ON DUPLICATE KEY UPDATE rol_solicitante=rol_solicitante;
 
 -- Verificar las tablas creadas
 SHOW TABLES;

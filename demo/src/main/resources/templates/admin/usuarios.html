@@ -253,7 +253,9 @@
                             <!-- Cambiar Rol -->
                             <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${u.id})}" method="post" style="display:inline;">
                                 <select name="rol" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                                    <option value="USUARIO" th:selected="${u.rol.name() == 'USUARIO'}">Usuario</option>
+                                    <option value="ALUMNO" th:selected="${u.rol.name() == 'ALUMNO'}">Alumno</option>
+                                    <option value="DOCENTE" th:selected="${u.rol.name() == 'DOCENTE'}">Docente</option>
+                                    <option value="ADMINISTRATIVO" th:selected="${u.rol.name() == 'ADMINISTRATIVO'}">Administrativo</option>
                                     <option value="TECNICO" th:selected="${u.rol.name() == 'TECNICO'}">Técnico</option>
                                     <option value="ADMIN" th:selected="${u.rol.name() == 'ADMIN'}">Admin</option>
                                 </select>

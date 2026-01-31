@@ -33,7 +33,7 @@ public class Ticket {
     private Usuario asignadoA;
 
     @ManyToOne
-    @JoinColumn(name = "sla_politica_id")
+    @JoinColumn(name = "sla_politica_id", nullable = false)
     private SlaPolitica slaPolitica;
 
     @ManyToOne
@@ -71,17 +71,15 @@ public class Ticket {
     @Column(name = "tiempo_resolucion_seg")
     private Integer tiempoResolucionSeg;
 
-    @Column(name = "tiempo_espera_seg")
-    private Integer tiempoEsperaSeg;
+    @Column(name = "tiempo_espera_seg", nullable = false)
+    private Integer tiempoEsperaSeg = 0;
 
     @Column(name = "espera_desde")
     private LocalDateTime esperaDesde;
 
-    @Column(name = "reabierto_count")
+    @Column(name = "reabierto_count", nullable = false)
     private Integer reabiertoCount = 0;
 
-    @Column(name = "tiempo_respuesta_sla")
-    private Integer tiempoRespuestaSLA = 24; // horas
 
     // Constructores
     public Ticket() {}
@@ -263,11 +261,4 @@ public class Ticket {
         this.reabiertoCount = reabiertoCount;
     }
 
-    public Integer getTiempoRespuestaSLA() {
-        return tiempoRespuestaSLA;
-    }
-
-    public void setTiempoRespuestaSLA(Integer tiempoRespuestaSLA) {
-        this.tiempoRespuestaSLA = tiempoRespuestaSLA;
-    }
 }
