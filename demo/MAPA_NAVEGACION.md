@@ -13,13 +13,13 @@
          │             │             │
          ▼             ▼             ▼
     ┌────────┐    ┌─────────┐   ┌──────────┐
-    │USUARIO │    │ TÉCNICO │   │  ADMIN   │
+    │ALUMNO │    │ TÉCNICO │   │  ADMIN   │
     └────────┘    └─────────┘   └──────────┘
 ```
 
 ---
 
-## 👤 ROL: USUARIO
+## 👤 ROL: ALUMNO
 
 ### Panel Principal (`/usuario/panel`)
 ├── Resumen de tickets (total, abiertos, en proceso, resueltos)
@@ -136,7 +136,7 @@
 │       ├── [Activar/Desactivar]
 │       │   └── POST: `/admin/usuarios/{id}/cambiar-estado`
 │       └── Cambiar Rol
-│           ├── Select: USUARIO, TECNICO, ADMIN
+│           ├── Select: ALUMNO, TECNICO, ADMIN
 │           └── POST: `/admin/usuarios/{id}/cambiar-rol`
 └── Buscar/Filtrar usuarios (futuro)
 
@@ -253,7 +253,7 @@ Opción E: Ver todos los tickets y estadísticas globales
 
 ### Con Autenticación - Por Rol
 
-| Ruta                | USUARIO | TÉCNICO | ADMIN |
+| Ruta                | ALUMNO | TÉCNICO | ADMIN |
 |---------------------|---------|---------|-------|
 | `/usuario/*`        | ✅      | ❌      | ❌    |
 | `/tecnico/*`        | ❌      | ✅      | ❌    |
@@ -271,22 +271,21 @@ Opción E: Ver todos los tickets y estadísticas globales
 ```
 ABIERTO → (técnico se asigna) → EN_PROCESO
     ↓                              ↓
-    └────────────────────────────→ RESUELTO
+    └────────────────────────────→ EN_ESPERA
                                     ↓
-                              ┌─────┴─────┐
-                              ↓           ↓
-                          CERRADO     REABIERTO
-                                        ↓
-                                   EN_PROCESO
+                                 RESUELTO
+                                    ↓
+                                 CERRADO
 ```
 
 ### Quién puede cambiar estados
 
 - **ABIERTO** → **EN_PROCESO**: Técnico (al asignarse)
+- **EN_PROCESO** → **EN_ESPERA**: Técnico o Admin
+- **EN_ESPERA** → **EN_PROCESO**: Técnico o Admin
 - **EN_PROCESO** → **RESUELTO**: Técnico
 - **RESUELTO** → **CERRADO**: Técnico o Admin
-- **RESUELTO** → **REABIERTO**: Usuario
-- **CERRADO** → **REABIERTO**: Usuario
+- **RESUELTO/CERRADO/CANCELADO** → **ABIERTO**: Creador o Staff
 
 ---
 
@@ -294,11 +293,11 @@ ABIERTO → (técnico se asigna) → EN_PROCESO
 
 ### Cálculo de SLA
 ```
-Tiempo de Resolución = Fecha Resolución - Fecha Creación
-SLA Definido = 24 horas (por defecto)
+Tiempo de Primera Respuesta = Fecha Primera Respuesta - Fecha Creación
+Tiempo de Resolución Efectivo = (Fecha Resolución - Fecha Creación) - Tiempo en Espera
 
-Si Tiempo de Resolución ≤ SLA → Cumple SLA ✅
-Si Tiempo de Resolución > SLA → Incumple SLA ❌
+Si Tiempo de Primera Respuesta ≤ SLA Primera Respuesta → Cumple ✅
+Si Tiempo de Resolución Efectivo ≤ SLA Resolución → Cumple ✅
 
 Porcentaje de Cumplimiento = (Tickets que cumplen / Total resueltos) × 100
 ```
@@ -318,9 +317,10 @@ Porcentaje de Cumplimiento = (Tickets que cumplen / Total resueltos) × 100
 ### Badges de Estado
 - **ABIERTO** → Azul (#17a2b8)
 - **EN_PROCESO** → Amarillo (#ffc107)
+- **EN_ESPERA** → Azul claro (#0ea5e9)
 - **RESUELTO** → Verde (#28a745)
 - **CERRADO** → Gris (#6c757d)
-- **REABIERTO** → Rojo (#dc3545)
+- **CANCELADO** → Naranja (#f97316)
 
 ### Badges de Prioridad
 - **BAJA** → Celeste claro
@@ -329,7 +329,9 @@ Porcentaje de Cumplimiento = (Tickets que cumplen / Total resueltos) × 100
 - **URGENTE** → Rojo intenso
 
 ### Badges de Rol
-- **USUARIO** → Azul (#007bff)
+- **ALUMNO** → Azul (#007bff)
+- **DOCENTE** → Verde (#10b981)
+- **ADMINISTRATIVO** → Amarillo (#f59e0b)
 - **TECNICO** → Naranja (#fd7e14)
 - **ADMIN** → Púrpura (#6610f2)
 

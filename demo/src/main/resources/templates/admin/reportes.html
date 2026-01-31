@@ -79,6 +79,12 @@
         .stat-card.resuelto { border-top-color: #10b981; }
         .stat-card.resuelto h3 { color: #10b981; }
 
+        .stat-card.en_espera { border-top-color: #0ea5e9; }
+        .stat-card.en_espera h3 { color: #0ea5e9; }
+
+        .stat-card.cancelado { border-top-color: #f97316; }
+        .stat-card.cancelado h3 { color: #f97316; }
+
         .stat-card.cerrado { border-top-color: #8b5cf6; }
         .stat-card.cerrado h3 { color: #8b5cf6; }
 
@@ -213,9 +219,14 @@
             color: #6b21a8;
         }
 
-        .badge-reabierto {
-            background-color: #dbeafe;
-            color: #0c4a6e;
+        .badge-en_espera {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-cancelado {
+            background-color: #ffedd5;
+            color: #c2410c;
         }
 
         .export-section {
@@ -388,6 +399,12 @@
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
+                <div class="stat-card en_espera">
+                    <p>En Espera</p>
+                    <h3 id="ticketsEnEspera" th:text="${reporteGeneral.ticketsEnEspera}">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2">
                 <div class="stat-card resuelto">
                     <p>Resueltos</p>
                     <h3 id="ticketsResueltos" th:text="${reporteGeneral.ticketsResueltos}">0</h3>
@@ -400,9 +417,9 @@
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
-                <div class="stat-card">
-                    <p>Reabiertos</p>
-                    <h3 id="ticketsReabiertos" th:text="${reporteGeneral.ticketsReabiertos}">0</h3>
+                <div class="stat-card cancelado">
+                    <p>Cancelados</p>
+                    <h3 id="ticketsCancelados" th:text="${reporteGeneral.ticketsCancelados}">0</h3>
                 </div>
             </div>
         </div>
@@ -431,6 +448,30 @@
                             <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
                         </div>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card success">
+                            <h4 id="slaPrimeraCumple" th:text="${reporteSLA.ticketsCumplenPrimeraRespuesta}">0</h4>
+                            <p><i class="bi bi-alarm"></i> SLA primera respuesta</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card warning">
+                            <h4 id="slaPrimeraIncumple" th:text="${reporteSLA.ticketsIncumplenPrimeraRespuesta}">0</h4>
+                            <p><i class="bi bi-alarm-fill"></i> Primera respuesta fuera SLA</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card success">
+                            <h4 id="slaResolucionCumple" th:text="${reporteSLA.ticketsCumplenResolucion}">0</h4>
+                            <p><i class="bi bi-check2-circle"></i> SLA resolución</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sla-detail-card warning">
+                            <h4 id="slaResolucionIncumple" th:text="${reporteSLA.ticketsIncumplenResolucion}">0</h4>
+                            <p><i class="bi bi-x-circle"></i> Resolución fuera SLA</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -453,6 +494,27 @@
                                   th:text="${entry.key}">Estado</span>
                         </td>
                         <td class="fw-bold" th:text="${entry.value}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title"><i class="bi bi-bar-chart me-2"></i>Top 5 Categorías</h2>
+        <div class="table-responsive mb-4">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-tag"></i> Categoría</th>
+                        <th><i class="bi bi-calculator"></i> Total de Tickets</th>
+                    </tr>
+                </thead>
+                <tbody id="top-categorias-body">
+                    <tr th:each="categoria : ${reporteGeneral.topCategorias}">
+                        <td th:text="${categoria.nombre}">Categoría</td>
+                        <td class="fw-bold" th:text="${categoria.total}">0</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reporteGeneral.topCategorias)}">
+                        <td colspan="2" class="text-center">Sin datos disponibles</td>
                     </tr>
                 </tbody>
             </table>
@@ -484,16 +546,8 @@
             // Aquí se implementaría la exportación real
         }
         function buildReporteUrl(periodo) {
-            if (periodo === 'mensual' || periodo === 'semanal') {
+            if (periodo === 'mensual' || periodo === 'semanal' || periodo === 'trimestral') {
                 return `/admin/reportes?periodo=${periodo}`;
-            }
-            if (periodo === 'trimestral') {
-                var hoy = new Date();
-                var hasta = hoy.toISOString().split('T')[0];
-                var desdeDate = new Date(hoy);
-                desdeDate.setMonth(hoy.getMonth() - 3);
-                var desde = desdeDate.toISOString().split('T')[0];
-                return `/admin/reportes?periodo=custom&desde=${desde}&hasta=${hasta}`;
             }
             return '/admin/reportes';
         }
@@ -503,12 +557,17 @@
                 ['totalTickets', 'totalTickets'],
                 ['ticketsAbiertos', 'ticketsAbiertos'],
                 ['ticketsEnProceso', 'ticketsEnProceso'],
+                ['ticketsEnEspera', 'ticketsEnEspera'],
                 ['ticketsResueltos', 'ticketsResueltos'],
                 ['ticketsCerrados', 'ticketsCerrados'],
-                ['ticketsReabiertos', 'ticketsReabiertos'],
+                ['ticketsCancelados', 'ticketsCancelados'],
                 ['slaPorcentaje', 'slaPorcentaje'],
                 ['slaCumplen', 'slaCumplen'],
-                ['slaIncumplen', 'slaIncumplen']
+                ['slaIncumplen', 'slaIncumplen'],
+                ['slaPrimeraCumple', 'slaPrimeraCumple'],
+                ['slaPrimeraIncumple', 'slaPrimeraIncumple'],
+                ['slaResolucionCumple', 'slaResolucionCumple'],
+                ['slaResolucionIncumple', 'slaResolucionIncumple']
             ];
             mapping.forEach(function(pair) {
                 var target = document.getElementById(pair[0]);
@@ -522,6 +581,12 @@
             var tableSource = doc.getElementById('estado-table-body');
             if (tableTarget && tableSource) {
                 tableTarget.innerHTML = tableSource.innerHTML;
+            }
+
+            var topTarget = document.getElementById('top-categorias-body');
+            var topSource = doc.getElementById('top-categorias-body');
+            if (topTarget && topSource) {
+                topTarget.innerHTML = topSource.innerHTML;
             }
         }
 

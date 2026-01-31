@@ -2,11 +2,11 @@
 
 ## 🎯 Resumen Ejecutivo
 
-He mejorado significativamente las páginas de detalle de tickets tanto para usuarios como para técnicos, proporcionando una experiencia moderna, intuitiva y completa para ver el historial de tickets.
+He mejorado significativamente las páginas de detalle de tickets tanto para solicitantes (alumnos, docentes y administrativos) como para técnicos, proporcionando una experiencia moderna, intuitiva y completa para ver el historial de tickets.
 
 ---
 
-## 👥 PARA USUARIOS
+## 👥 PARA SOLICITANTES
 
 ### Antes vs Después
 
@@ -33,7 +33,7 @@ Diseño moderno y profesional
 ✅ Iconos de Bootstrap para claridad
 ```
 
-### Nuevas Características para Usuarios
+### Nuevas Características para Solicitantes
 
 #### 1. **Header Mejorado**
 

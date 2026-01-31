@@ -189,13 +189,28 @@
     color: white;
 }
 
-.badge.REABIERTO {
-    background-color: #dc3545;
+.badge.EN_ESPERA {
+    background-color: #0ea5e9;
     color: white;
 }
 
-.badge.USUARIO {
-    background-color: #007bff;
+.badge.CANCELADO {
+    background-color: #f97316;
+    color: white;
+}
+
+.badge.ALUMNO {
+    background-color: #2563eb;
+    color: white;
+}
+
+.badge.DOCENTE {
+    background-color: #10b981;
+    color: white;
+}
+
+.badge.ADMINISTRATIVO {
+    background-color: #f59e0b;
     color: white;
 }
 
