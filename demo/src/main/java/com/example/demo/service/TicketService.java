@@ -79,6 +79,30 @@ public class TicketService {
         EstadoTicket estadoAnterior = ticket.getEstado();
         LocalDateTime ahora = LocalDateTime.now();
 
+        // REABIERTO: debe pasar por aquí para no desincronizar contadores/fechas
+        if (nuevoEstado == EstadoTicket.REABIERTO) {
+            boolean esCreador = ticket.getCreadoPor() != null
+                    && ticket.getCreadoPor().getId().equals(usuario.getId());
+            if (!esCreador && !esStaff(usuario)) {
+                throw new RuntimeException("No autorizado para reabrir el ticket");
+            }
+
+            if (!(estadoAnterior == EstadoTicket.RESUELTO
+                    || estadoAnterior == EstadoTicket.CERRADO
+                    || estadoAnterior == EstadoTicket.CANCELADO)) {
+                throw new RuntimeException("Solo se puede reabrir un ticket RESUELTO/CERRADO/CANCELADO");
+            }
+
+            int reabiertos = ticket.getReabiertoCount() != null ? ticket.getReabiertoCount() : 0;
+            ticket.setReabiertoCount(reabiertos + 1);
+
+            // Reset del ciclo anterior: evita que se queden fechas/tiempos/evidencias viejas
+            ticket.setFechaResolucion(null);
+            ticket.setTiempoResolucionSeg(null);
+            ticket.setFechaCierre(null);
+            ticket.setEvidenciaResolucion(null);
+        }
+
         if (nuevoEstado == EstadoTicket.EN_ESPERA && ticket.getEsperaDesde() == null) {
             ticket.setEsperaDesde(ahora);
         }
@@ -125,11 +149,24 @@ public class TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        String accion = "Estado cambiado de " + estadoAnterior + " a " + nuevoEstado;
-        registrarHistorial(savedTicket, usuario, "ESTADO", accion, estadoAnterior, nuevoEstado, observaciones, null, null);
-        registrarHistorial(savedTicket, usuario, "ESTADO", accion, estadoAnterior, nuevoEstado, observaciones, null, null);
+        String tipo = (nuevoEstado == EstadoTicket.REABIERTO) ? "REAPERTURA" : "ESTADO";
+        String accion = (nuevoEstado == EstadoTicket.REABIERTO)
+                ? "Ticket reabierto"
+                : "Estado cambiado de " + estadoAnterior + " a " + nuevoEstado;
 
-        emailService.notifyUserOnTicketChange(savedTicket, accion + (observaciones != null ? " - " + observaciones : ""));
+        registrarHistorial(savedTicket, usuario, tipo, accion, estadoAnterior, nuevoEstado, observaciones, null, null);
+
+        emailService.notifyUserOnTicketChange(savedTicket,
+                accion + (observaciones != null ? " - " + observaciones : ""));
+
+        // En reapertura, además avisa a quien lo vaya a atender
+        if (nuevoEstado == EstadoTicket.REABIERTO) {
+            if (savedTicket.getAsignadoA() != null) {
+                emailService.notifyAssignedTechnician(savedTicket);
+            } else {
+                emailService.notifyTechniciansOnNewTicket(savedTicket);
+            }
+        }
 
         return savedTicket;
     }
@@ -157,29 +194,8 @@ public class TicketService {
     }
 
     public Ticket reabrirTicket(Long ticketId, Usuario usuario) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
-
-        boolean esCreador = ticket.getCreadoPor() != null && ticket.getCreadoPor().getId().equals(usuario.getId());
-        if (!esCreador && !esStaff(usuario)) {
-            throw new RuntimeException("No autorizado para reabrir el ticket");
-        }
-
-        if (ticket.getEstado() == EstadoTicket.RESUELTO
-                || ticket.getEstado() == EstadoTicket.CERRADO
-                || ticket.getEstado() == EstadoTicket.CANCELADO) {
-            EstadoTicket estadoAnterior = ticket.getEstado();
-            ticket.setEstado(EstadoTicket.REABIERTO);
-            ticket.setFechaActualizacion(LocalDateTime.now());
-            int reabiertos = ticket.getReabiertoCount() != null ? ticket.getReabiertoCount() : 0;
-            ticket.setReabiertoCount(reabiertos + 1);
-            Ticket savedTicket = ticketRepository.save(ticket);
-            registrarHistorial(savedTicket, usuario, "REAPERTURA", "Ticket reabierto", estadoAnterior,
-                    EstadoTicket.REABIERTO, null, null, null);
-            return savedTicket;
-        }
-
-        return ticket;
+        // Delegar en la transición central (valida permisos + resetea métricas)
+        return cambiarEstado(ticketId, EstadoTicket.REABIERTO, usuario, "Ticket reabierto", null);
     }
 
     public List<Ticket> obtenerTicketsDeUsuario(Usuario usuario) {

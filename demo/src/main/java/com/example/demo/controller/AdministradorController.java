@@ -320,7 +320,11 @@ public class AdministradorController {
             return "redirect:/login";
         }
 
-        ticketService.reabrirTicket(id, admin);
+        try {
+            ticketService.reabrirTicket(id, admin);
+        } catch (Exception e) {
+            return "redirect:/admin/ticket/" + id + "?error=reabrir";
+        }
         return "redirect:/admin/ticket/" + id;
     }
 

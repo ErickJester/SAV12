@@ -6,7 +6,7 @@ import com.example.demo.service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframeAwork.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -147,7 +147,11 @@ public class TecnicoController {
             return "redirect:/login";
         }
 
-        ticketService.reabrirTicket(id, tecnico);
+        try {
+            ticketService.reabrirTicket(id, tecnico);
+        } catch (Exception e) {
+            return "redirect:/tecnico/ticket/" + id + "?error=reabrir";
+        }
         return "redirect:/tecnico/ticket/" + id;
     }
 
