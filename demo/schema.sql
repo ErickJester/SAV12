@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS sla_politicas (
     sla_primera_respuesta_min INT NOT NULL,
     sla_resolucion_min INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
+    UNIQUE KEY uq_sla_rol (rol_solicitante),
     INDEX idx_sla_rol (rol_solicitante),
     INDEX idx_sla_activo (activo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -154,7 +154,7 @@ public class ReporteService {
                         !t.getFechaCreacion().isBefore(desde) && !t.getFechaCreacion().isAfter(hasta))
                 .collect(Collectors.toList());
 
-        int totalTickets = todosTickets.size();
+        int totalTickets = 0;
         int ticketsCumplenSLA = 0;
         int ticketsIncumplenSLA = 0;
         int ticketsCumplenPrimeraRespuesta = 0;
@@ -209,16 +209,16 @@ public class ReporteService {
 
         Integer tiempoPrimeraRespuestaSeg = ticket.getTiempoPrimeraRespuestaSeg();
         Integer tiempoResolucionSeg = ticket.getTiempoResolucionSeg();
-        int slaPrimeraRespuestaSeg = ticket.getSlaPolitica().getSlaPrimeraRespuestaMin() * 60;
-        int slaResolucionSeg = ticket.getSlaPolitica().getSlaResolucionMin() * 60;
+        int slaPrimeraRespuestaMin = ticket.getSlaPolitica().getSlaPrimeraRespuestaMin();
+        int slaResolucionMin = ticket.getSlaPolitica().getSlaResolucionMin();
         int tiempoEsperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
 
         boolean cumplePrimeraRespuesta = ticket.getFechaPrimeraRespuesta() != null
                 && tiempoPrimeraRespuestaSeg != null
-                && tiempoPrimeraRespuestaSeg <= slaPrimeraRespuestaSeg;
+                && (tiempoPrimeraRespuestaSeg / 60.0) <= slaPrimeraRespuestaMin;
         boolean cumpleResolucion = ticket.getFechaResolucion() != null
                 && tiempoResolucionSeg != null
-                && Math.max(0, tiempoResolucionSeg - tiempoEsperaSeg) <= slaResolucionSeg;
+                && (Math.max(0, tiempoResolucionSeg - tiempoEsperaSeg) / 60.0) <= slaResolucionMin;
 
         return new SlaResultado(cumplePrimeraRespuesta, cumpleResolucion,
                 cumplePrimeraRespuesta && cumpleResolucion);
