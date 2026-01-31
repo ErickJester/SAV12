@@ -46,6 +46,7 @@ ALTER TABLE tickets
     CHANGE COLUMN usuario_id creado_por_id BIGINT NOT NULL,
     CHANGE COLUMN tecnico_id asignado_a_id BIGINT NULL,
     CHANGE COLUMN evidencia evidencia_problema VARCHAR(500),
+    MODIFY COLUMN estado ENUM('ABIERTO', 'REABIERTO', 'EN_PROCESO', 'EN_ESPERA', 'RESUELTO', 'CERRADO', 'CANCELADO') NOT NULL DEFAULT 'ABIERTO',
     ADD COLUMN evidencia_resolucion VARCHAR(500) NULL AFTER evidencia_problema,
     ADD COLUMN fecha_primera_respuesta DATETIME NULL AFTER fecha_actualizacion,
     ADD COLUMN fecha_cierre DATETIME NULL AFTER fecha_resolucion,
@@ -57,7 +58,6 @@ ALTER TABLE tickets
     ADD COLUMN sla_politica_id BIGINT NULL AFTER ubicacion_id,
     DROP COLUMN tiempo_respuesta_sla;
 
-UPDATE tickets SET estado = 'ABIERTO' WHERE estado = 'REABIERTO';
 UPDATE tickets SET sla_politica_id = (SELECT id FROM sla_politicas WHERE rol_solicitante = 'ALUMNO' LIMIT 1)
     WHERE sla_politica_id IS NULL;
 

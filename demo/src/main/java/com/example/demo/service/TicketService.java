@@ -150,13 +150,13 @@ public class TicketService {
                 || ticket.getEstado() == EstadoTicket.CERRADO
                 || ticket.getEstado() == EstadoTicket.CANCELADO) {
             EstadoTicket estadoAnterior = ticket.getEstado();
-            ticket.setEstado(EstadoTicket.ABIERTO);
+            ticket.setEstado(EstadoTicket.REABIERTO);
             ticket.setFechaActualizacion(LocalDateTime.now());
             int reabiertos = ticket.getReabiertoCount() != null ? ticket.getReabiertoCount() : 0;
             ticket.setReabiertoCount(reabiertos + 1);
             Ticket savedTicket = ticketRepository.save(ticket);
             registrarHistorial(savedTicket, usuario, "REAPERTURA", "Ticket reabierto", estadoAnterior,
-                    EstadoTicket.ABIERTO, null, null, null);
+                    EstadoTicket.REABIERTO, null, null, null);
             return savedTicket;
         }
 

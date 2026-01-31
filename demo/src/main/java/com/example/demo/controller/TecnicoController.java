@@ -43,7 +43,8 @@ public class TecnicoController {
                 .collect(Collectors.toList());
         List<Ticket> ticketsSinAsignar = ticketService.obtenerTodosLosTickets()
                 .stream()
-                .filter(t -> t.getAsignadoA() == null && t.getEstado() == EstadoTicket.ABIERTO)
+                .filter(t -> t.getAsignadoA() == null
+                        && (t.getEstado() == EstadoTicket.ABIERTO || t.getEstado() == EstadoTicket.REABIERTO))
                 .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
                 .collect(Collectors.toList());
 
