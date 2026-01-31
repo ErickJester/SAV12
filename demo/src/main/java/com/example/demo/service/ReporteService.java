@@ -110,6 +110,7 @@ public class ReporteService {
         long resueltosTotal = ticketRepository.findByEstado(EstadoTicket.RESUELTO).size()
                 + ticketRepository.findByEstado(EstadoTicket.CERRADO).size();
         long noResueltos = ticketRepository.findByEstado(EstadoTicket.ABIERTO).size()
+                + ticketRepository.findByEstado(EstadoTicket.REABIERTO).size()
                 + ticketRepository.findByEstado(EstadoTicket.EN_PROCESO).size()
                 + ticketRepository.findByEstado(EstadoTicket.EN_ESPERA).size();
         reporte.put("ticketsResueltosTotal", resueltosTotal);
@@ -153,6 +154,7 @@ public class ReporteService {
                 .count();
         long noResueltos = tickets.stream()
                 .filter(t -> t.getEstado() == EstadoTicket.ABIERTO
+                        || t.getEstado() == EstadoTicket.REABIERTO
                         || t.getEstado() == EstadoTicket.EN_PROCESO
                         || t.getEstado() == EstadoTicket.EN_ESPERA)
                 .count();

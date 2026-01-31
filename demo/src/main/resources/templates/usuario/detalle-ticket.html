@@ -32,6 +32,11 @@
             border: 1px solid rgba(255,255,255,0.5);
         }
 
+        .badge.REABIERTO {
+            background: #f59e0b;
+            color: white;
+        }
+
         .badge.EN_PROCESO {
             background: #3b82f6;
             color: white;
@@ -437,6 +442,7 @@
                         <i class="bi bi-info-circle"></i>
                         <span th:switch="${ticket.estado.name()}">
                             <span th:case="'ABIERTO'">Tu ticket está abierto y pendiente de ser asignado a un técnico.</span>
+                            <span th:case="'REABIERTO'">Tu ticket fue reabierto y será atendido nuevamente.</span>
                             <span th:case="'EN_PROCESO'">Un técnico está trabajando en tu solicitud.</span>
                             <span th:case="'RESUELTO'">Tu ticket ha sido resuelto. Puedes reabrirlo si tienes otra duda.</span>
                             <span th:case="'CERRADO'">Tu ticket fue cerrado. Puedes reabrirlo si lo necesitas.</span>

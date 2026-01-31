@@ -251,6 +251,7 @@ public class AdministradorController {
             if ("activo".equalsIgnoreCase(filtro)) {
                 tickets = tickets.stream()
                         .filter(t -> t.getEstado() == EstadoTicket.ABIERTO
+                                || t.getEstado() == EstadoTicket.REABIERTO
                                 || t.getEstado() == EstadoTicket.EN_PROCESO
                                 || t.getEstado() == EstadoTicket.EN_ESPERA)
                         .collect(Collectors.toList());
