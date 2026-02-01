@@ -80,8 +80,14 @@ public class AdministradorController {
 
         Usuario usuario = usuarioService.obtenerPorId(id);
         if (usuario != null) {
-            usuario.setRol(Rol.valueOf(rol));
-            usuarioService.guardarUsuario(usuario);
+            try {
+                Rol nuevoRol = Rol.valueOf(rol);
+                usuario.setRol(nuevoRol);
+                usuarioService.guardarUsuario(usuario);
+            } catch (IllegalArgumentException ex) {
+                // rol inválido -> no revienta, solo redirige con error
+                return "redirect:/admin/usuarios?error=rolinvalido";
+            }
         }
         return "redirect:/admin/usuarios?success=rolchanged";
     }
@@ -154,50 +160,75 @@ public class AdministradorController {
         Usuario admin = (Usuario) session.getAttribute("usuario");
         if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
 
-        Map<String, Object> reporteSLA;
-        Map<String, Long> reportePorEstado;
-        Map<String, Object> reporteGeneral;
-        List<Map<String, Object>> topCategorias;
-
-        if (periodo != null) {
-            LocalDateTime ahora = LocalDateTime.now();
-            LocalDateTime desdeDate = ahora.minusWeeks(1);
-            LocalDateTime hastaDate = ahora;
-
-            if ("mensual".equalsIgnoreCase(periodo)) {
-                desdeDate = ahora.minusMonths(1);
-            } else if ("semanal".equalsIgnoreCase(periodo)) {
-                desdeDate = ahora.minusWeeks(1);
-            } else if ("trimestral".equalsIgnoreCase(periodo)) {
-                desdeDate = ahora.minusMonths(3);
-            } else if ("custom".equalsIgnoreCase(periodo) && desde != null && hasta != null) {
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                LocalDate d = LocalDate.parse(desde, fmt);
-                LocalDate h = LocalDate.parse(hasta, fmt);
-                desdeDate = d.atStartOfDay();
-                hastaDate = h.atTime(LocalTime.MAX);
-            }
-
-            reporteSLA = reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate);
-            reportePorEstado = reporteService.generarReportePorEstadoPorPeriodo(desdeDate, hastaDate);
-            reporteGeneral = reporteService.generarReporteGeneralPorPeriodo(desdeDate, hastaDate);
-            topCategorias = reporteService.generarTopCategoriasPorPeriodo(desdeDate, hastaDate);
-
-            model.addAttribute("periodoSeleccionado", periodo);
-            model.addAttribute("desde", desde);
-            model.addAttribute("hasta", hasta);
-        } else {
-            reporteSLA = reporteService.generarReporteSLA();
-            reportePorEstado = reporteService.generarReportePorEstado();
-            reporteGeneral = reporteService.generarReporteGeneral();
-            topCategorias = reporteService.generarTopCategorias();
+        // Normaliza periodo (UI y backend alineados)
+        if (periodo == null || periodo.isBlank()) {
+            periodo = "semanal";
         }
+
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime hastaDate = ahora;
+        LocalDateTime desdeDate;
+
+        switch (periodo.toLowerCase()) {
+            case "mensual":
+                desdeDate = ahora.minusMonths(1);
+                break;
+
+            case "trimestral":
+                desdeDate = ahora.minusMonths(3);
+                break;
+
+            case "anual":
+                desdeDate = ahora.minusYears(1);
+                break;
+
+            case "custom":
+                if (desde != null && !desde.isBlank() && hasta != null && !hasta.isBlank()) {
+                    try {
+                        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                        LocalDate d = LocalDate.parse(desde, fmt);
+                        LocalDate h = LocalDate.parse(hasta, fmt);
+                        desdeDate = d.atStartOfDay();
+                        hastaDate = h.atTime(LocalTime.MAX);
+                    } catch (Exception ex) {
+                        // fechas inválidas -> fallback semanal
+                        periodo = "semanal";
+                        desde = null;
+                        hasta = null;
+                        desdeDate = ahora.minusWeeks(1);
+                    }
+                } else {
+                    // custom incompleto -> fallback semanal
+                    periodo = "semanal";
+                    desde = null;
+                    hasta = null;
+                    desdeDate = ahora.minusWeeks(1);
+                }
+                break;
+
+            case "semanal":
+            default:
+                desdeDate = ahora.minusWeeks(1);
+                break;
+        }
+
+        // Un solo camino: siempre por periodo
+        Map<String, Object> reporteSLA = reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate);
+        Map<String, Long> reportePorEstado = reporteService.generarReportePorEstadoPorPeriodo(desdeDate, hastaDate);
+        Map<String, Object> reporteGeneral = reporteService.generarReporteGeneralPorPeriodo(desdeDate, hastaDate);
+        List<Map<String, Object>> topCategorias = reporteService.generarTopCategoriasPorPeriodo(desdeDate, hastaDate);
+
+        // Siempre setearlo para el selector
+        model.addAttribute("periodoSeleccionado", periodo);
+        model.addAttribute("desde", desde);
+        model.addAttribute("hasta", hasta);
 
         model.addAttribute("reporteSLA", reporteSLA);
         model.addAttribute("reportePorEstado", reportePorEstado);
         model.addAttribute("reporteGeneral", reporteGeneral);
         model.addAttribute("topCategorias", topCategorias);
         model.addAttribute("usuario", admin);
+
         return "admin/reportes";
     }
 
@@ -225,11 +256,11 @@ public class AdministradorController {
             }
         }
 
-        // ✅ FIX: esto es lo que tu vista espera como "asignables"
+        // Esto es lo que la vista espera como "asignables"
         List<Usuario> asignables = usuarioService.obtenerUsuariosAsignables();
 
         model.addAttribute("tickets", tickets);
-        model.addAttribute("asignables", asignables); // ✅ ya no truena
+        model.addAttribute("asignables", asignables);
         model.addAttribute("usuario", admin);
         model.addAttribute("filtro", filtro == null ? "all" : filtro);
         return "admin/tickets";

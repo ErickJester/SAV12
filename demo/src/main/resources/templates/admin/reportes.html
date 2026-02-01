@@ -3,682 +3,522 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Reportes y Estadísticas</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+
     <style>
         :root {
-            --primary-color: #7c3aed;
-            --secondary-color: #6d28d9;
-            --light-bg: #f8fafc;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #3b82f6;
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #14b8a6;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
         }
 
         body {
-            background-color: var(--light-bg);
+            background: var(--gray-50);
+            color: var(--gray-800);
         }
 
-        .navbar-custom {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 28px 0;
+            margin-bottom: 24px;
         }
 
-        .navbar-custom .navbar-brand {
+        .page-header h1 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .card {
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
             font-weight: 700;
-            font-size: 1.3rem;
-            letter-spacing: -0.5px;
-        }
-
-        .navbar-custom .nav-link {
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .navbar-custom .nav-link:hover {
-            transform: translateY(-2px);
         }
 
         .stat-card {
+            border-radius: 14px;
+            border: 1px solid var(--gray-200);
             background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-top: 4px solid var(--primary-color);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
+            padding: 18px;
+            height: 100%;
         }
 
-        .stat-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-            transform: translateY(-2px);
+        .stat-card .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            margin-bottom: 10px;
         }
+
+        .stat-card.primary .icon { background: var(--primary); }
+        .stat-card.secondary .icon { background: var(--secondary); }
+        .stat-card.warning .icon { background: var(--warning); }
+        .stat-card.danger .icon { background: var(--danger); }
+        .stat-card.success .icon { background: var(--success); }
 
         .stat-card h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin: 0.5rem 0 0 0;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
         .stat-card p {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin: 0;
-            font-weight: 500;
+            margin: 4px 0 0 0;
+            color: var(--gray-600);
+            font-weight: 600;
         }
 
-        .stat-card.abierto { border-top-color: #ef4444; }
-        .stat-card.abierto h3 { color: #ef4444; }
-
-        .stat-card.en_proceso { border-top-color: #f59e0b; }
-        .stat-card.en_proceso h3 { color: #f59e0b; }
-
-        .stat-card.resuelto { border-top-color: #10b981; }
-        .stat-card.resuelto h3 { color: #10b981; }
-
-        .stat-card.en_espera { border-top-color: #0ea5e9; }
-        .stat-card.en_espera h3 { color: #0ea5e9; }
-
-        .stat-card.cancelado { border-top-color: #f97316; }
-        .stat-card.cancelado h3 { color: #f97316; }
-
-        .stat-card.cerrado { border-top-color: #8b5cf6; }
-        .stat-card.cerrado h3 { color: #8b5cf6; }
-
-        .section-title {
-            font-size: 1.5rem;
+        .badge-soft {
+            background: var(--gray-100);
+            color: var(--gray-800);
+            border: 1px solid var(--gray-200);
             font-weight: 700;
-            color: #1e293b;
-            margin-top: 2rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 3px solid var(--primary-color);
         }
 
         .sla-card {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            padding: 18px;
+            background: white;
+            height: 100%;
         }
 
-        .sla-percentage {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #d97706;
-            margin: 1rem 0;
+        .sla-card h4 { font-weight: 800; }
+
+        .sla-metric {
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
         }
 
         .sla-detail-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid;
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            padding: 14px;
+            background: var(--gray-50);
+            height: 100%;
         }
 
-        .sla-detail-card.success {
-            border-left-color: var(--success-color);
-        }
-
-        .sla-detail-card.success h4 {
-            color: var(--success-color);
-        }
-
-        .sla-detail-card.warning {
-            border-left-color: var(--warning-color);
-        }
-
-        .sla-detail-card.warning h4 {
-            color: var(--warning-color);
-        }
+        .sla-detail-card.success { border-left: 6px solid var(--success); }
+        .sla-detail-card.danger  { border-left: 6px solid var(--danger);  }
 
         .sla-detail-card h4 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-weight: 900;
+            margin: 0;
+            font-size: 26px;
         }
 
         .sla-detail-card p {
-            color: #64748b;
-            margin: 0;
-            font-weight: 500;
+            margin: 4px 0 0 0;
+            color: var(--gray-600);
+            font-weight: 700;
         }
 
-        .table-responsive {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        .period-select { max-width: 260px; }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            font-weight: 800;
         }
 
-        .table {
-            margin-bottom: 0;
-        }
-
-        .table thead {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
         }
 
         .table thead th {
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 1rem;
-            border: none;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+            font-weight: 800;
         }
 
-        .table tbody tr {
-            border-bottom: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
-
-        .table tbody tr:hover {
-            background-color: #f8fafc;
-        }
-
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-            color: #475569;
-        }
-
-        .badge {
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-abierto {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-
-        .badge-en_proceso {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-resuelto {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-
-        .badge-cerrado {
-            background-color: #f3e8ff;
-            color: #6b21a8;
-        }
-
-        .badge-en_espera {
-            background-color: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .badge-cancelado {
-            background-color: #ffedd5;
-            color: #c2410c;
-        }
-
-        .export-section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .btn-custom {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            border: none;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-print {
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            color: white;
-        }
-
-        .btn-print:hover {
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-export {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
-
-        .btn-export:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .breadcrumb {
-            background-color: transparent;
-            padding: 0;
-            margin-bottom: 1.5rem;
-        }
-
-        .breadcrumb-item {
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .breadcrumb-item.active {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .breadcrumb-item a {
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .breadcrumb-item a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .navbar-custom .navbar-brand {
-                font-size: 1.1rem;
-            }
-
-            .stat-card h3 {
-                font-size: 1.5rem;
-            }
-
-            .section-title {
-                font-size: 1.25rem;
-            }
-
-            .sla-percentage {
-                font-size: 2.5rem;
-            }
-
-            .sla-detail-card h4 {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media print {
-            .navbar-custom,
-            .export-section {
-                display: none;
-            }
-
-            .stat-card {
-                page-break-inside: avoid;
-            }
-        }
+        .small-muted { color: var(--gray-600); }
     </style>
 </head>
+
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
-        <div class="container-fluid">
-            <span class="navbar-brand">
-                <i class="bi bi-pie-chart-fill me-2"></i>Panel de Reportes
-            </span>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/logout}">
-                            <i class="bi bi-box-arrow-right me-1"></i>Cerrar Sesión
-                        </a>
-                    </li>
-                </ul>
+
+<header class="page-header">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h1><i class="bi bi-graph-up"></i> Reportes y Estadísticas</h1>
+                <p>Resumen de tickets, SLA y métricas clave del sistema</p>
             </div>
-        </div>
-    </nav>
 
-    <div class="container-fluid py-4">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a th:href="@{/admin/panel}"><i class="bi bi-house"></i> Panel</a></li>
-                <li class="breadcrumb-item active"><i class="bi bi-file-earmark-chart"></i> Reportes</li>
-            </ol>
-        </nav>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-soft p-2">
+                    <i class="bi bi-clock-history"></i>
+                    <span th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}">--</span>
+                </span>
 
-        <!-- Selector de periodo -->
-        <div class="row g-3 align-items-end mb-4">
-            <div class="col-md-4">
-                <label class="form-label fw-semibold" for="periodSelector">Periodo del reporte</label>
-                <select id="periodSelector" class="form-select"
-                        th:attr="data-initial-period=${periodoSeleccionado != null ? periodoSeleccionado : 'semanal'}">
-                    <option value="semanal">Reporte semanal</option>
-                    <option value="mensual">Reporte mensual</option>
-                    <option value="trimestral">Reporte trimestral</option>
+                <select id="periodSelector"
+                        class="form-select period-select"
+                        th:data-initial-period="${periodoSeleccionado}">
+                    <option value="semanal">Semanal</option>
+                    <option value="mensual">Mensual</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="anual">Anual</option>
                 </select>
-            </div>
-            <div class="col-md-8">
-                <div id="reportStatus" class="alert alert-info mb-0 d-none" role="status"></div>
-            </div>
-        </div>
 
-        <h2 class="section-title"><i class="bi bi-graph-up me-2"></i>Resumen General</h2>
-        <div class="row">
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card">
-                    <p>Total de Tickets</p>
-                    <h3 id="totalTickets" th:text="${reporteGeneral.totalTickets}">0</h3>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card abierto">
-                    <p>Abiertos</p>
-                    <h3 id="ticketsAbiertos" th:text="${reporteGeneral.ticketsAbiertos}">0</h3>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card en_proceso">
-                    <p>En Proceso</p>
-                    <h3 id="ticketsEnProceso" th:text="${reporteGeneral.ticketsEnProceso}">0</h3>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card en_espera">
-                    <p>En Espera</p>
-                    <h3 id="ticketsEnEspera" th:text="${reporteGeneral.ticketsEnEspera}">0</h3>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card resuelto">
-                    <p>Resueltos</p>
-                    <h3 id="ticketsResueltos" th:text="${reporteGeneral.ticketsResueltos}">0</h3>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card cerrado">
-                    <p>Cerrados</p>
-                    <h3 id="ticketsCerrados" th:text="${reporteGeneral.ticketsCerrados}">0</h3>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <div class="stat-card cancelado">
-                    <p>Cancelados</p>
-                    <h3 id="ticketsCancelados" th:text="${reporteGeneral.ticketsCancelados}">0</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLA Compliance -->
-        <h2 class="section-title"><i class="bi bi-clock-history me-2"></i>Cumplimiento de SLA</h2>
-        <div class="row mb-4">
-            <div class="col-lg-6 mb-3 mb-lg-0">
-                <div class="sla-card">
-                    <h4 class="mb-3"><i class="bi bi-chat-dots"></i> SLA 1ª Respuesta</h4>
-                    <div id="slaPrimeraRespuestaPorcentaje" class="sla-percentage" th:text="${reporteSLA.slaPrimeraRespuestaPorcentaje + '%'}">0%</div>
-                    <div class="row mt-3">
-                        <div class="col-md-6 mb-3 mb-md-0">
-                            <div class="sla-detail-card success">
-                                <h4 id="slaPrimeraRespuestaCumplen" th:text="${reporteSLA.slaPrimeraRespuestaCumplen}">0</h4>
-                                <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="sla-detail-card warning">
-                                <h4 id="slaPrimeraRespuestaIncumplen" th:text="${reporteSLA.slaPrimeraRespuestaIncumplen}">0</h4>
-                                <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="mb-0">Basado en la primera respuesta registrada.</p>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="sla-card">
-                    <h4 class="mb-3"><i class="bi bi-hourglass-split"></i> SLA Resolución</h4>
-                    <div id="slaResolucionPorcentaje" class="sla-percentage" th:text="${reporteSLA.slaResolucionPorcentaje + '%'}">0%</div>
-                    <div class="row mt-3">
-                        <div class="col-md-6 mb-3 mb-md-0">
-                            <div class="sla-detail-card success">
-                                <h4 id="slaResolucionCumplen" th:text="${reporteSLA.slaResolucionCumplen}">0</h4>
-                                <p><i class="bi bi-check-circle"></i> Cumplen SLA</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="sla-detail-card warning">
-                                <h4 id="slaResolucionIncumplen" th:text="${reporteSLA.slaResolucionIncumplen}">0</h4>
-                                <p><i class="bi bi-exclamation-circle"></i> Incumplen SLA</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card success">
-                            <h4 id="slaPrimeraCumple" th:text="${reporteSLA.ticketsCumplenPrimeraRespuesta}">0</h4>
-                            <p><i class="bi bi-alarm"></i> SLA primera respuesta</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card warning">
-                            <h4 id="slaPrimeraIncumple" th:text="${reporteSLA.ticketsIncumplenPrimeraRespuesta}">0</h4>
-                            <p><i class="bi bi-alarm-fill"></i> Primera respuesta fuera SLA</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card success">
-                            <h4 id="slaResolucionCumple" th:text="${reporteSLA.ticketsCumplenResolucion}">0</h4>
-                            <p><i class="bi bi-check2-circle"></i> SLA resolución</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card warning">
-                            <h4 id="slaResolucionIncumple" th:text="${reporteSLA.ticketsIncumplenResolucion}">0</h4>
-                            <p><i class="bi bi-x-circle"></i> Resolución fuera SLA</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card success">
-                            <h4 id="slaPrimeraCumple" th:text="${reporteSLA.ticketsCumplenPrimeraRespuesta}">0</h4>
-                            <p><i class="bi bi-alarm"></i> SLA primera respuesta</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card warning">
-                            <h4 id="slaPrimeraIncumple" th:text="${reporteSLA.ticketsIncumplenPrimeraRespuesta}">0</h4>
-                            <p><i class="bi bi-alarm-fill"></i> Primera respuesta fuera SLA</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card success">
-                            <h4 id="slaResolucionCumple" th:text="${reporteSLA.ticketsCumplenResolucion}">0</h4>
-                            <p><i class="bi bi-check2-circle"></i> SLA resolución</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="sla-detail-card warning">
-                            <h4 id="slaResolucionIncumple" th:text="${reporteSLA.ticketsIncumplenResolucion}">0</h4>
-                            <p><i class="bi bi-x-circle"></i> Resolución fuera SLA</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Estado Distribution -->
-        <h2 class="section-title"><i class="bi bi-list-check me-2"></i>Distribución por Estado</h2>
-        <div class="table-responsive mb-4">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th><i class="bi bi-hash"></i> Estado</th>
-                        <th><i class="bi bi-calculator"></i> Cantidad de Tickets</th>
-                    </tr>
-                </thead>
-                <tbody id="estado-table-body">
-                    <tr th:each="entry : ${reportePorEstado}">
-                        <td>
-                            <span class="badge" 
-                                  th:classappend="'badge-' + ${entry.key.toLowerCase().replace('_', '_')}"
-                                  th:text="${entry.key}">Estado</span>
-                        </td>
-                        <td class="fw-bold" th:text="${entry.value}">0</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <h2 class="section-title"><i class="bi bi-bar-chart me-2"></i>Top 5 Categorías</h2>
-        <div class="table-responsive mb-4">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th><i class="bi bi-tag"></i> Categoría</th>
-                        <th><i class="bi bi-calculator"></i> Total de Tickets</th>
-                    </tr>
-                </thead>
-                <tbody id="top-categorias-body">
-                    <tr th:each="categoria : ${reporteGeneral.topCategorias}">
-                        <td th:text="${categoria.nombre}">Categoría</td>
-                        <td class="fw-bold" th:text="${categoria.total}">0</td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(reporteGeneral.topCategorias)}">
-                        <td colspan="2" class="text-center">Sin datos disponibles</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Export Options -->
-        <h2 class="section-title"><i class="bi bi-download me-2"></i>Exportar Reportes</h2>
-        <div class="export-section">
-            <div class="row">
-                <div class="col-md-6 mb-2 mb-md-0">
-                    <button class="btn btn-custom btn-print w-100" onclick="window.print()">
-                        <i class="bi bi-printer me-2"></i>Imprimir Reporte
-                    </button>
-                </div>
-                <div class="col-md-6">
-                    <button class="btn btn-custom btn-export w-100" onclick="exportToCSV()">
-                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportar a CSV
-                    </button>
-                </div>
+                <button class="btn btn-primary" onclick="exportToCSV()">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </button>
             </div>
         </div>
     </div>
+</header>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/jquery-1.12.4.min.js}"></script>
-    <script>
-        function exportToCSV() {
-            alert('Funcionalidad de exportación a CSV en desarrollo');
-            // Aquí se implementaría la exportación real
-        }
-        function buildReporteUrl(periodo) {
-            if (periodo === 'mensual' || periodo === 'semanal' || periodo === 'trimestral') {
-                return `/admin/reportes?periodo=${periodo}`;
-            }
-            return '/admin/reportes';
-        }
+<main class="container pb-5">
 
-        function updateReportData(doc) {
-            var mapping = [
-                ['totalTickets', 'totalTickets'],
-                ['ticketsAbiertos', 'ticketsAbiertos'],
-                ['ticketsEnProceso', 'ticketsEnProceso'],
-                ['ticketsEnEspera', 'ticketsEnEspera'],
-                ['ticketsResueltos', 'ticketsResueltos'],
-                ['ticketsCerrados', 'ticketsCerrados'],
-                ['ticketsCancelados', 'ticketsCancelados'],
-                ['slaPorcentaje', 'slaPorcentaje'],
-                ['slaCumplen', 'slaCumplen'],
-                ['slaIncumplen', 'slaIncumplen'],
-                ['slaPrimeraCumple', 'slaPrimeraCumple'],
-                ['slaPrimeraIncumple', 'slaPrimeraIncumple'],
-                ['slaResolucionCumple', 'slaResolucionCumple'],
-                ['slaResolucionIncumple', 'slaResolucionIncumple']
-            ];
-            mapping.forEach(function(pair) {
-                var target = document.getElementById(pair[0]);
-                var source = doc.getElementById(pair[1]);
-                if (target && source) {
-                    target.textContent = source.textContent;
-                }
+    <!-- TICKETS GENERAL -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-ticket-perforated"></i> Tickets (general)</span>
+            <span class="small-muted">Totales por estado</span>
+        </div>
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card primary">
+                        <div class="icon"><i class="bi bi-ticket"></i></div>
+                        <h3 id="ticketsTotal" th:text="${reporteGeneral.totalTickets}">0</h3>
+                        <p>Total tickets</p>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card success">
+                        <div class="icon"><i class="bi bi-check2-circle"></i></div>
+                        <h3 id="ticketsResueltos" th:text="${reporteGeneral.ticketsResueltos}">0</h3>
+                        <p>Resueltos</p>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card warning">
+                        <div class="icon"><i class="bi bi-hourglass-split"></i></div>
+                        <h3 id="ticketsEnProceso" th:text="${reporteGeneral.ticketsEnProceso}">0</h3>
+                        <p>En proceso</p>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card danger">
+                        <div class="icon"><i class="bi bi-exclamation-triangle"></i></div>
+                        <h3 id="ticketsAbiertos" th:text="${reporteGeneral.ticketsAbiertos}">0</h3>
+                        <p>Abiertos</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row g-3">
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card secondary">
+                        <div class="icon"><i class="bi bi-pause-circle"></i></div>
+                        <h3 id="ticketsEnEspera" th:text="${reporteGeneral.ticketsEnEspera}">0</h3>
+                        <p>En espera</p>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card secondary">
+                        <div class="icon"><i class="bi bi-check2-all"></i></div>
+                        <h3 id="ticketsCerrados" th:text="${reporteGeneral.ticketsCerrados}">0</h3>
+                        <p>Cerrados</p>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card danger">
+                        <div class="icon"><i class="bi bi-x-circle"></i></div>
+                        <h3 id="ticketsCancelados" th:text="${reporteGeneral.ticketsCancelados}">0</h3>
+                        <p>Cancelados</p>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="stat-card warning">
+                        <div class="icon"><i class="bi bi-arrow-repeat"></i></div>
+                        <h3 id="ticketsReabiertos" th:text="${reporteGeneral.ticketsReabiertos}">0</h3>
+                        <p>Reabiertos</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SLA -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-stopwatch"></i> Reporte de SLA</span>
+            <span class="small-muted">Primera respuesta y resolución</span>
+        </div>
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <!-- SLA Primera Respuesta -->
+                <div class="col-lg-6">
+                    <div class="sla-card">
+                        <h4 class="mb-3"><i class="bi bi-alarm"></i> SLA Primera Respuesta</h4>
+
+                        <div class="d-flex align-items-end justify-content-between">
+                            <div>
+                                <div class="sla-metric" id="slaPrimeraRespuestaPorcentaje"
+                                     th:text="${reporteSLA.slaPrimeraRespuestaPorcentaje + '%'}">0%</div>
+                                <div class="small-muted">Cumplimiento</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small-muted">Tickets analizados</div>
+                                <div class="fw-bold" id="slaPrimeraRespuestaTotal"
+                                     th:text="${reporteSLA.totalTickets}">0</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="sla-detail-card success">
+                                    <h4 id="slaPrimeraRespuestaCumplen"
+                                        th:text="${reporteSLA.ticketsCumplenPrimeraRespuesta}">0</h4>
+                                    <p><i class="bi bi-check2-circle"></i> Cumplen SLA</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="sla-detail-card danger">
+                                    <h4 id="slaPrimeraRespuestaIncumplen"
+                                        th:text="${reporteSLA.ticketsIncumplenPrimeraRespuesta}">0</h4>
+                                    <p><i class="bi bi-x-circle"></i> Fuera SLA</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="mt-3 small-muted mb-0">
+                            Basado en la fecha de primera respuesta registrada.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SLA Resolución -->
+                <div class="col-lg-6">
+                    <div class="sla-card">
+                        <h4 class="mb-3"><i class="bi bi-hourglass-split"></i> SLA Resolución</h4>
+
+                        <div class="d-flex align-items-end justify-content-between">
+                            <div>
+                                <div class="sla-metric" id="slaResolucionPorcentaje"
+                                     th:text="${reporteSLA.slaResolucionPorcentaje + '%'}">0%</div>
+                                <div class="small-muted">Cumplimiento</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small-muted">Tickets analizados</div>
+                                <div class="fw-bold" id="slaResolucionTotal"
+                                     th:text="${reporteSLA.totalTickets}">0</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="sla-detail-card success">
+                                    <h4 id="slaResolucionCumplen"
+                                        th:text="${reporteSLA.ticketsCumplenResolucion}">0</h4>
+                                    <p><i class="bi bi-check2-circle"></i> Cumplen SLA</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="sla-detail-card danger">
+                                    <h4 id="slaResolucionIncumplen"
+                                        th:text="${reporteSLA.ticketsIncumplenResolucion}">0</h4>
+                                    <p><i class="bi bi-x-circle"></i> Fuera SLA</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="mt-3 small-muted mb-0">
+                            Basado en la fecha de resolución registrada.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TOP CATEGORÍAS -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-list-check"></i> Top categorías</span>
+            <span class="small-muted">Frecuencia por categoría</span>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>Categoría</th>
+                    <th class="text-end">Cantidad</th>
+                </tr>
+                </thead>
+                <tbody id="topCategoriasBody">
+                <tr th:each="c : ${topCategorias}">
+                    <td th:text="${c.nombre}">---</td>
+                    <td class="text-end fw-bold" th:text="${c.total}">0</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(topCategorias)}">
+                    <td colspan="2" class="text-center text-muted">Sin datos</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- STATUS -->
+    <div id="statusMsg" class="alert d-none" role="alert"></div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function exportToCSV() {
+        alert('Exportación CSV: conecta tu endpoint real aquí.');
+    }
+
+    function setStatus(msg, klass) {
+        const el = document.getElementById('statusMsg');
+        el.className = 'alert ' + klass;
+        el.textContent = msg;
+        el.classList.remove('d-none');
+    }
+
+    function clearStatus() {
+        const el = document.getElementById('statusMsg');
+        el.classList.add('d-none');
+    }
+
+    async function loadReporte(periodo) {
+        try {
+            const res = await fetch(`/admin/reportes?periodo=${encodeURIComponent(periodo)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
 
-            var tableTarget = document.getElementById('estado-table-body');
-            var tableSource = doc.getElementById('estado-table-body');
-            if (tableTarget && tableSource) {
-                tableTarget.innerHTML = tableSource.innerHTML;
+            // si la sesión expiró y el backend redirige, no intentes parsear HTML
+            if (res.redirected) {
+                window.location.href = res.url;
+                return;
             }
 
-            var topTarget = document.getElementById('top-categorias-body');
-            var topSource = doc.getElementById('top-categorias-body');
-            if (topTarget && topSource) {
-                topTarget.innerHTML = topSource.innerHTML;
-            }
-        }
+            if (!res.ok) throw new Error('HTTP ' + res.status);
 
-        function setStatus(message, type) {
-            var status = document.getElementById('reportStatus');
-            if (!status) return;
-            status.textContent = message;
-            status.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
-            status.classList.add(type);
-        }
+            const text = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
 
-        function clearStatus() {
-            var status = document.getElementById('reportStatus');
-            if (!status) return;
-            status.textContent = '';
-            status.classList.add('d-none');
+            updateReportData(doc);
+            setStatus('Reporte actualizado.', 'alert-success');
+            setTimeout(clearStatus, 1500);
+        } catch (e) {
+            console.error(e);
+            setStatus('Error al actualizar el reporte', 'alert-danger');
         }
+    }
 
-        function loadReporte(periodo) {
-            var url = buildReporteUrl(periodo);
-            setStatus('Cargando reporte...', 'alert-info');
-            fetch(url)
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Respuesta inválida');
-                    }
-                    return response.text();
-                })
-                .then(function(html) {
-                    var parser = new DOMParser();
-                    var doc = parser.parseFromString(html, 'text/html');
-                    updateReportData(doc);
-                    setStatus('Reporte actualizado.', 'alert-success');
-                    setTimeout(clearStatus, 2000);
-                })
-                .catch(function() {
-                    setStatus('No se pudo cargar el reporte. Intenta nuevamente.', 'alert-danger');
-                });
-        }
+    function copyText(doc, id) {
+        const src = doc.getElementById(id);
+        const dst = document.getElementById(id);
+        if (src && dst) dst.textContent = src.textContent;
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var selector = document.getElementById('periodSelector');
-            if (!selector) return;
-            var initial = selector.dataset.initialPeriod || 'semanal';
-            selector.value = initial;
-            loadReporte(initial);
-            selector.addEventListener('change', function(event) {
-                loadReporte(event.target.value);
-            });
+    function copyBodyInnerHTML(doc, id) {
+        const src = doc.getElementById(id);
+        const dst = document.getElementById(id);
+        if (src && dst) dst.innerHTML = src.innerHTML;
+    }
+
+    function updateReportData(doc) {
+        // Cards / métricas
+        [
+            'ticketsTotal',
+            'ticketsAbiertos',
+            'ticketsEnProceso',
+            'ticketsEnEspera',
+            'ticketsResueltos',
+            'ticketsCerrados',
+            'ticketsCancelados',
+            'ticketsReabiertos',
+
+            'slaPrimeraRespuestaPorcentaje',
+            'slaPrimeraRespuestaCumplen',
+            'slaPrimeraRespuestaIncumplen',
+            'slaPrimeraRespuestaTotal',
+
+            'slaResolucionPorcentaje',
+            'slaResolucionCumplen',
+            'slaResolucionIncumplen',
+            'slaResolucionTotal'
+        ].forEach(id => copyText(doc, id));
+
+        // Tabla top categorías
+        ['topCategoriasBody'].forEach(id => copyBodyInnerHTML(doc, id));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const selector = document.getElementById('periodSelector');
+        if (!selector) return;
+
+        const initial = selector.dataset.initialPeriod || 'semanal';
+        selector.value = initial;
+
+        selector.addEventListener('change', function(event) {
+            loadReporte(event.target.value);
         });
-    </script>
+    });
+</script>
+
 </body>
 </html>

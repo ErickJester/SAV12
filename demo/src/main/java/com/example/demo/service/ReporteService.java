@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,7 +65,7 @@ public class ReporteService {
 
                 if (r.cumplePrimeraRespuesta) cumplePrimera++; else incumplePrimera++;
                 if (r.cumpleResolucion)       cumpleResol++;   else incumpleResol++;
-                if (r.cumpleGlobal)          cumpleGlobal++;  else incumpleGlobal++;
+                if (r.cumpleGlobal)           cumpleGlobal++;  else incumpleGlobal++;
             }
         }
 
@@ -78,7 +81,7 @@ public class ReporteService {
         reporte.put("ticketsCumplenResolucion", cumpleResol);
         reporte.put("ticketsIncumplenResolucion", incumpleResol);
 
-        // ---- campos que tu template usa directo ----
+        // ---- campos que template/js puede usar directo ----
         reporte.put("slaPrimeraRespuestaCumplen", cumplePrimera);
         reporte.put("slaPrimeraRespuestaIncumplen", incumplePrimera);
         reporte.put("slaPrimeraRespuestaPorcentaje", pct(cumplePrimera, total));
@@ -91,6 +94,7 @@ public class ReporteService {
         reporte.put("slaIncumplen", incumpleGlobal);
         reporte.put("slaPorcentaje", pct(cumpleGlobal, total));
 
+        // alias
         reporte.put("porcentajeCumplimiento", pct(cumpleGlobal, total));
 
         return reporte;
@@ -107,21 +111,33 @@ public class ReporteService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> generarReportePorEstado() {
-        Map<String, Long> reporte = new HashMap<>();
-        for (EstadoTicket estado : EstadoTicket.values()) {
-            reporte.put(estado.name(), (long) ticketRepository.findByEstado(estado).size());
-        }
-        return reporte;
+        // Devuelve SIEMPRE todos los estados (con ceros)
+        Map<String, Long> base = new LinkedHashMap<>();
+        for (EstadoTicket e : EstadoTicket.values()) base.put(e.name(), 0L);
+
+        Map<String, Long> conteo = ticketRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(t -> t.getEstado().name(), Collectors.counting()));
+
+        conteo.forEach(base::put);
+        return base;
     }
 
     @Transactional(readOnly = true)
     public Map<String, Long> generarReportePorEstadoPorPeriodo(LocalDateTime desde, LocalDateTime hasta) {
-        return ticketRepository.findAll()
+        // Devuelve SIEMPRE todos los estados (con ceros)
+        Map<String, Long> base = new LinkedHashMap<>();
+        for (EstadoTicket e : EstadoTicket.values()) base.put(e.name(), 0L);
+
+        Map<String, Long> conteo = ticketRepository.findAll()
                 .stream()
                 .filter(t -> t.getFechaCreacion() != null
                         && !t.getFechaCreacion().isBefore(desde)
                         && !t.getFechaCreacion().isAfter(hasta))
                 .collect(Collectors.groupingBy(t -> t.getEstado().name(), Collectors.counting()));
+
+        conteo.forEach(base::put);
+        return base;
     }
 
     // =========================
@@ -150,16 +166,20 @@ public class ReporteService {
 
         reporte.put("totalTickets", tickets.size());
 
+        // ✅ FIX: abiertos NO incluye REABIERTO (si no, doble conteo)
         long abiertos = tickets.stream()
-                .filter(t -> t.getEstado() == EstadoTicket.ABIERTO || t.getEstado() == EstadoTicket.REABIERTO)
+                .filter(t -> t.getEstado() == EstadoTicket.ABIERTO)
+                .count();
+
+        long reabiertos = tickets.stream()
+                .filter(t -> t.getEstado() == EstadoTicket.REABIERTO)
                 .count();
 
         long enProceso = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.EN_PROCESO).count();
-        long enEspera = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.EN_ESPERA).count();
+        long enEspera  = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.EN_ESPERA).count();
         long resueltos = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.RESUELTO).count();
-        long cerrados = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CERRADO).count();
-        long cancelados = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CANCELADO).count();
-        long reabiertos = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.REABIERTO).count();
+        long cerrados  = tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CERRADO).count();
+        long cancelados= tickets.stream().filter(t -> t.getEstado() == EstadoTicket.CANCELADO).count();
 
         reporte.put("ticketsAbiertos", abiertos);
         reporte.put("ticketsReabiertos", reabiertos);
@@ -170,11 +190,12 @@ public class ReporteService {
         reporte.put("ticketsCancelados", cancelados);
 
         long resueltosTotal = resueltos + cerrados;
-        long noResueltos = abiertos + enProceso + enEspera;
+        long noResueltos = abiertos + reabiertos + enProceso + enEspera;
 
         reporte.put("ticketsResueltosTotal", resueltosTotal);
         reporte.put("ticketsNoResueltos", noResueltos);
 
+        // top categorías también lo expones aquí (por si lo consume otra vista)
         reporte.put("topCategorias", obtenerTopCategorias(tickets));
 
         return reporte;
@@ -214,7 +235,7 @@ public class ReporteService {
                 .map(e -> {
                     Map<String, Object> m = new HashMap<>();
                     m.put("nombre", e.getKey());
-                    m.put("total", e.getValue());
+                    m.put("total", e.getValue()); // 👈 tu HTML debe usar c.total
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -230,10 +251,10 @@ public class ReporteService {
         }
 
         Integer tPrimera = ticket.getTiempoPrimeraRespuestaSeg();
-        Integer tResol = ticket.getTiempoResolucionSeg();
+        Integer tResol   = ticket.getTiempoResolucionSeg();
 
         int slaPrimeraMin = ticket.getSlaPolitica().getSlaPrimeraRespuestaMin();
-        int slaResolMin = ticket.getSlaPolitica().getSlaResolucionMin();
+        int slaResolMin   = ticket.getSlaPolitica().getSlaResolucionMin();
 
         int esperaSeg = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
 
