@@ -1,44 +1,70 @@
--- Script SQL para inicializar datos básicos del sistema SAV12
+-- Script SQL idempotente para inicializar datos básicos del sistema SAV12
+-- (puede ejecutarse múltiples veces sin tirar Duplicate entry)
 
--- Crear categorías de ejemplo
-INSERT INTO categorias (nombre, descripcion, activo) VALUES 
-('Hardware', 'Problemas relacionados con equipo físico', true),
-('Software', 'Problemas con aplicaciones y sistemas operativos', true),
-('Red', 'Problemas de conectividad y red', true),
-('Impresoras', 'Problemas con impresoras y escáneres', true),
-('Audio/Video', 'Problemas con proyectores, audio y video', true),
-('Acceso', 'Problemas de acceso a sistemas y cuentas', true),
-('Otro', 'Otros problemas no categorizados', true);
+START TRANSACTION;
 
--- Crear ubicaciones de ejemplo
-INSERT INTO ubicaciones (edificio, piso, salon, activo) VALUES 
-('Edificio Central', 'Planta Baja', 'Sala 101', true),
-('Edificio Central', 'Planta Baja', 'Sala 102', true),
-('Edificio Central', 'Primer Piso', 'Sala 201', true),
-('Edificio Central', 'Primer Piso', 'Sala 202', true),
-('Edificio Central', 'Segundo Piso', 'Sala 301', true),
-('Edificio Central', 'Segundo Piso', 'Sala 302', true),
-('Edificio Norte', 'Planta Baja', 'Laboratorio 1', true),
-('Edificio Norte', 'Planta Baja', 'Laboratorio 2', true),
-('Edificio Norte', 'Primer Piso', 'Aula Magna', true),
-('Edificio Sur', 'Planta Baja', 'Biblioteca', true),
-('Edificio Sur', 'Primer Piso', 'Sala de Profesores', true),
-('Edificio Oeste', 'Planta Baja', 'Cafetería', true),
-('Edificio Oeste', 'Primer Piso', 'Auditorio', true);
+-- =========================
+-- CATEGORÍAS (UPSERT por UNIQUE(nombre))
+-- =========================
+INSERT INTO categorias (nombre, descripcion, activo)
+VALUES
+  ('Hardware',  'Problemas relacionados con equipo físico',                TRUE),
+  ('Software',  'Problemas con aplicaciones y sistemas operativos',        TRUE),
+  ('Red',       'Problemas de conectividad y red',                         TRUE),
+  ('Impresoras','Problemas con impresoras y escáneres',                    TRUE),
+  ('Audio/Video','Problemas con proyectores, audio y video',               TRUE),
+  ('Acceso',    'Problemas de acceso a sistemas y cuentas',                TRUE),
+  ('Otro',      'Otros problemas no categorizados',                        TRUE)
+AS new_row
+ON DUPLICATE KEY UPDATE
+  descripcion = new_row.descripcion,
+  activo      = new_row.activo;
 
--- Crear usuarios de ejemplo (las contraseñas deberían estar encriptadas en producción)
--- Alumno
-INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo) VALUES 
-('Juan Pérez', 'juan.perez@example.com', 'password123', 'ALUMNO', '2021600001', NULL, true);
+-- =========================
+-- UBICACIONES (INSERT si NO existe por (edificio,piso,salon))
+-- =========================
+INSERT INTO ubicaciones (edificio, piso, salon, activo)
+SELECT v.edificio, v.piso, v.salon, v.activo
+FROM (
+  SELECT 'Edificio Central' AS edificio, 'Planta Baja' AS piso, 'Sala 101' AS salon, TRUE AS activo
+  UNION ALL SELECT 'Edificio Central', 'Planta Baja', 'Sala 102', TRUE
+  UNION ALL SELECT 'Edificio Central', 'Primer Piso',  'Sala 201', TRUE
+  UNION ALL SELECT 'Edificio Central', 'Primer Piso',  'Sala 202', TRUE
+  UNION ALL SELECT 'Edificio Central', 'Segundo Piso', 'Sala 301', TRUE
+  UNION ALL SELECT 'Edificio Central', 'Segundo Piso', 'Sala 302', TRUE
+  UNION ALL SELECT 'Edificio Norte',   'Planta Baja',  'Laboratorio 1', TRUE
+  UNION ALL SELECT 'Edificio Norte',   'Planta Baja',  'Laboratorio 2', TRUE
+  UNION ALL SELECT 'Edificio Norte',   'Primer Piso',  'Aula Magna', TRUE
+  UNION ALL SELECT 'Edificio Sur',     'Planta Baja',  'Biblioteca', TRUE
+  UNION ALL SELECT 'Edificio Sur',     'Primer Piso',  'Sala de Profesores', TRUE
+  UNION ALL SELECT 'Edificio Oeste',   'Planta Baja',  'Cafetería', TRUE
+  UNION ALL SELECT 'Edificio Oeste',   'Primer Piso',  'Auditorio', TRUE
+) AS v
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM ubicaciones u
+  WHERE u.edificio = v.edificio
+    AND u.piso     = v.piso
+    AND u.salon    = v.salon
+);
 
--- Técnico
-INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo) VALUES 
-('María García', 'maria.garcia@example.com', 'tecnico123', 'TECNICO', NULL, 'TEC001', true),
-('Carlos López', 'carlos.lopez@example.com', 'tecnico123', 'TECNICO', NULL, 'TEC002', true);
+-- =========================
+-- USUARIOS (UPSERT por UNIQUE(correo) y/o boleta/id_trabajador)
+-- Nota: contraseñas en claro solo para local
+-- =========================
+INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo)
+VALUES
+  ('Juan Pérez',   'juan.perez@example.com',   'password123', 'ALUMNO',  '2021600001', NULL,     TRUE),
+  ('María García', 'maria.garcia@example.com', 'tecnico123',  'TECNICO', NULL,         'TEC001', TRUE),
+  ('Carlos López', 'carlos.lopez@example.com', 'tecnico123',  'TECNICO', NULL,         'TEC002', TRUE),
+  ('Admin Sistema','admin@example.com',        'admin123',    'ADMIN',   NULL,         'ADM001', TRUE)
+AS new_row
+ON DUPLICATE KEY UPDATE
+  nombre        = new_row.nombre,
+  password_hash = new_row.password_hash,
+  rol           = new_row.rol,
+  boleta        = new_row.boleta,
+  id_trabajador = new_row.id_trabajador,
+  activo        = new_row.activo;
 
--- Administrador
-INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo) VALUES 
-('Admin Sistema', 'admin@example.com', 'admin123', 'ADMIN', NULL, 'ADM001', true);
-
--- Nota: En producción, las contraseñas deben estar encriptadas con BCrypt
--- Ejemplo de contraseña encriptada: $2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6
+COMMIT;

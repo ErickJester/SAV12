@@ -19,14 +19,13 @@ public class HistorialAccion {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @Column(nullable = false)
+    // Ej: "REAPERTURA", "ESTADO", "ASIGNACION", etc.
+    @Column(name = "tipo", nullable = false)
     private String tipo;
 
-    @Column(nullable = false)
-    private String accion; // "Ticket creado", "Estado cambiado a EN_PROCESO", etc.
-
-    @Column(name = "tipo")
-    private String tipo;
+    // Ej: "Ticket creado", "Estado cambiado a EN_PROCESO", etc.
+    @Column(name = "accion", nullable = false)
+    private String accion;
 
     @Column(name = "estado_anterior")
     @Enumerated(EnumType.STRING)
@@ -45,15 +44,22 @@ public class HistorialAccion {
     private Usuario asignadoNuevo;
 
     @Column(name = "fecha_accion", nullable = false)
-    private LocalDateTime fechaAccion = LocalDateTime.now();
+    private LocalDateTime fechaAccion;
 
     @Column(columnDefinition = "TEXT")
     private String detalles;
 
-    // Constructores
     public HistorialAccion() {}
 
-    // Getters y Setters
+    @PrePersist
+    void prePersist() {
+        if (fechaAccion == null) {
+            fechaAccion = LocalDateTime.now();
+        }
+    }
+
+    // Getters / Setters
+
     public Long getId() {
         return id;
     }
@@ -78,28 +84,20 @@ public class HistorialAccion {
         this.usuario = usuario;
     }
 
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
     public String getAccion() {
         return accion;
     }
 
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
     public void setAccion(String accion) {
         this.accion = accion;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
     }
 
     public EstadoTicket getEstadoAnterior() {

@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TicketService {
@@ -32,17 +33,20 @@ public class TicketService {
     @Autowired
     private EmailService emailService;
 
-    @Autowired
-    private SlaPoliticaRepository slaPoliticaRepository;
-
     public Ticket crearTicket(TicketDTO dto, Usuario usuario) {
         Ticket ticket = new Ticket();
         ticket.setTitulo(dto.getTitulo());
         ticket.setDescripcion(dto.getDescripcion());
         ticket.setCreadoPor(usuario);
+
+        // Fechas base (evita NPE al calcular duraciones si tu entidad no las setea sola)
+        if (ticket.getFechaCreacion() == null) {
+            ticket.setFechaCreacion(LocalDateTime.now());
+        }
+        ticket.setFechaActualizacion(ticket.getFechaCreacion());
+
         ticket.setEstado(EstadoTicket.ABIERTO);
         ticket.setEvidenciaProblema(dto.getEvidenciaProblema());
-        ticket.setSlaPolitica(obtenerSlaPorRol(usuario));
 
         if (dto.getCategoriaId() != null) {
             Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElse(null);
@@ -62,19 +66,31 @@ public class TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        registrarHistorial(savedTicket, usuario, "CREACION", "Ticket creado", null, EstadoTicket.ABIERTO, null, null, null);
+        registrarHistorial(
+                savedTicket,
+                usuario,
+                "CREACION",
+                "Ticket creado",
+                null,
+                EstadoTicket.ABIERTO,
+                null,
+                null,
+                null
+        );
 
         emailService.notifyTechniciansOnNewTicket(savedTicket);
-
         return savedTicket;
     }
 
-    public Ticket cambiarEstado(Long ticketId, EstadoTicket nuevoEstado, Usuario usuario, String observaciones,
-                                String evidenciaResolucion) {
+    public Ticket cambiarEstado(Long ticketId,
+                               EstadoTicket nuevoEstado,
+                               Usuario usuario,
+                               String observaciones,
+                               String evidenciaResolucion) {
+
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
 
-        LocalDateTime ahora = LocalDateTime.now();
         EstadoTicket estadoAnterior = ticket.getEstado();
         LocalDateTime ahora = LocalDateTime.now();
 
@@ -82,6 +98,7 @@ public class TicketService {
         if (nuevoEstado == EstadoTicket.REABIERTO) {
             boolean esCreador = ticket.getCreadoPor() != null
                     && ticket.getCreadoPor().getId().equals(usuario.getId());
+
             if (!esCreador && !esStaff(usuario)) {
                 throw new RuntimeException("No autorizado para reabrir el ticket");
             }
@@ -95,22 +112,25 @@ public class TicketService {
             int reabiertos = ticket.getReabiertoCount() != null ? ticket.getReabiertoCount() : 0;
             ticket.setReabiertoCount(reabiertos + 1);
 
-            // Reset del ciclo anterior: evita que se queden fechas/tiempos/evidencias viejas
+            // Reset del ciclo anterior: evita valores viejos
             ticket.setFechaResolucion(null);
             ticket.setTiempoResolucionSeg(null);
             ticket.setFechaCierre(null);
             ticket.setEvidenciaResolucion(null);
         }
 
+        // EN_ESPERA: arranca timer
         if (nuevoEstado == EstadoTicket.EN_ESPERA && ticket.getEsperaDesde() == null) {
             ticket.setEsperaDesde(ahora);
         }
 
+        // Salida de EN_ESPERA: acumula
         if (estadoAnterior == EstadoTicket.EN_ESPERA && nuevoEstado != EstadoTicket.EN_ESPERA) {
             if (ticket.getEsperaDesde() != null) {
                 long esperaSeg = Duration.between(ticket.getEsperaDesde(), ahora).getSeconds();
                 int acumulado = ticket.getTiempoEsperaSeg() != null ? ticket.getTiempoEsperaSeg() : 0;
-                ticket.setTiempoEsperaSeg(Math.toIntExact(acumulado + esperaSeg));
+                long total = (long) acumulado + esperaSeg;
+                ticket.setTiempoEsperaSeg(total > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) total);
                 ticket.setEsperaDesde(null);
             }
         }
@@ -118,30 +138,34 @@ public class TicketService {
         ticket.setEstado(nuevoEstado);
         ticket.setFechaActualizacion(ahora);
 
+        // Primera respuesta (solo staff)
         if (ticket.getFechaPrimeraRespuesta() == null && esStaff(usuario)) {
             ticket.setFechaPrimeraRespuesta(ahora);
-            ticket.setTiempoPrimeraRespuestaSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), ahora).getSeconds()));
+            long seg = Duration.between(ticket.getFechaCreacion(), ahora).getSeconds();
+            ticket.setTiempoPrimeraRespuestaSeg(seg > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) seg);
         }
 
+        // RESUELTO: setea resolución y tiempo
         if (nuevoEstado == EstadoTicket.RESUELTO) {
-            if (ticket.getFechaResolucion() == null) {
-                ticket.setFechaResolucion(ahora);
-            }
-            LocalDateTime fechaResolucion = ticket.getFechaResolucion();
-            ticket.setTiempoResolucionSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), fechaResolucion).getSeconds()));
-            if (evidenciaResolucion != null) {
+            ticket.setFechaResolucion(ahora); // en RESUELTO siempre corresponde a "este" ciclo
+            long seg = Duration.between(ticket.getFechaCreacion(), ticket.getFechaResolucion()).getSeconds();
+            ticket.setTiempoResolucionSeg(seg > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) seg);
+
+            if (evidenciaResolucion != null && !evidenciaResolucion.isBlank()) {
                 ticket.setEvidenciaResolucion(evidenciaResolucion);
             }
         }
 
+        // CERRADO: setea cierre + si no hay resolución, la pone
         if (nuevoEstado == EstadoTicket.CERRADO) {
             ticket.setFechaCierre(ahora);
             if (ticket.getFechaResolucion() == null) {
                 ticket.setFechaResolucion(ahora);
             }
-            LocalDateTime fechaResolucion = ticket.getFechaResolucion();
-            ticket.setTiempoResolucionSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), fechaResolucion).getSeconds()));
-            if (evidenciaResolucion != null) {
+            long seg = Duration.between(ticket.getFechaCreacion(), ticket.getFechaResolucion()).getSeconds();
+            ticket.setTiempoResolucionSeg(seg > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) seg);
+
+            if (evidenciaResolucion != null && !evidenciaResolucion.isBlank()) {
                 ticket.setEvidenciaResolucion(evidenciaResolucion);
             }
         }
@@ -153,12 +177,24 @@ public class TicketService {
                 ? "Ticket reabierto"
                 : "Estado cambiado de " + estadoAnterior + " a " + nuevoEstado;
 
-        registrarHistorial(savedTicket, usuario, tipo, accion, estadoAnterior, nuevoEstado, observaciones, null, null);
+        registrarHistorial(
+                savedTicket,
+                usuario,
+                tipo,
+                accion,
+                estadoAnterior,
+                nuevoEstado,
+                observaciones,
+                null,
+                null
+        );
 
-        emailService.notifyUserOnTicketChange(savedTicket,
-                accion + (observaciones != null ? " - " + observaciones : ""));
+        emailService.notifyUserOnTicketChange(
+                savedTicket,
+                accion + (observaciones != null ? " - " + observaciones : "")
+        );
 
-        // En reapertura, además avisa a quien lo vaya a atender
+        // En reapertura, avisa a asignado o a técnicos
         if (nuevoEstado == EstadoTicket.REABIERTO) {
             if (savedTicket.getAsignadoA() != null) {
                 emailService.notifyAssignedTechnician(savedTicket);
@@ -176,24 +212,36 @@ public class TicketService {
 
         Usuario asignadoAnterior = ticket.getAsignadoA();
         ticket.setAsignadoA(asignadoNuevo);
+
         LocalDateTime ahora = LocalDateTime.now();
         ticket.setFechaActualizacion(ahora);
 
+        // Primera respuesta al asignar (si el actor es staff)
         if (ticket.getFechaPrimeraRespuesta() == null && esStaff(actor)) {
             ticket.setFechaPrimeraRespuesta(ahora);
-            ticket.setTiempoPrimeraRespuestaSeg(Math.toIntExact(Duration.between(ticket.getFechaCreacion(), ahora).getSeconds()));
+            long seg = Duration.between(ticket.getFechaCreacion(), ahora).getSeconds();
+            ticket.setTiempoPrimeraRespuestaSeg(seg > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) seg);
         }
 
         Ticket savedTicket = ticketRepository.save(ticket);
-        registrarHistorial(savedTicket, actor, "ASIGNACION", "Asignación de ticket", null, null, null,
-                asignadoAnterior, asignadoNuevo);
-        emailService.notifyAssignedTechnician(savedTicket);
 
+        registrarHistorial(
+                savedTicket,
+                actor,
+                "ASIGNACION",
+                "Asignación de ticket",
+                null,
+                null,
+                null,
+                asignadoAnterior,
+                asignadoNuevo
+        );
+
+        emailService.notifyAssignedTechnician(savedTicket);
         return savedTicket;
     }
 
     public Ticket reabrirTicket(Long ticketId, Usuario usuario) {
-        // Delegar en la transición central (valida permisos + resetea métricas)
         return cambiarEstado(ticketId, EstadoTicket.REABIERTO, usuario, "Ticket reabierto", null);
     }
 
@@ -223,9 +271,16 @@ public class TicketService {
         return historialRepository.findByTicketOrderByFechaAccionDesc(ticket);
     }
 
-    private void registrarHistorial(Ticket ticket, Usuario usuario, String tipo, String accion,
-                                    EstadoTicket estadoAnterior, EstadoTicket estadoNuevo, String detalles,
-                                    Usuario asignadoAnterior, Usuario asignadoNuevo) {
+    private void registrarHistorial(Ticket ticket,
+                                    Usuario usuario,
+                                    String tipo,
+                                    String accion,
+                                    EstadoTicket estadoAnterior,
+                                    EstadoTicket estadoNuevo,
+                                    String detalles,
+                                    Usuario asignadoAnterior,
+                                    Usuario asignadoNuevo) {
+
         HistorialAccion historial = new HistorialAccion();
         historial.setTicket(ticket);
         historial.setUsuario(usuario);
@@ -236,8 +291,7 @@ public class TicketService {
         historial.setAsignadoAnterior(asignadoAnterior);
         historial.setAsignadoNuevo(asignadoNuevo);
         historial.setDetalles(detalles);
-        historial.setAsignadoAnterior(asignadoAnterior);
-        historial.setAsignadoNuevo(asignadoNuevo);
+
         historialRepository.save(historial);
     }
 
@@ -249,7 +303,9 @@ public class TicketService {
         String rolSolicitante = (rol == Rol.ALUMNO || rol == Rol.DOCENTE || rol == Rol.ADMINISTRATIVO)
                 ? rol.name()
                 : Rol.ALUMNO.name();
+
         Optional<SlaPolitica> sla = slaPoliticaRepository.findFirstByRolSolicitanteAndActivoTrue(rolSolicitante);
+
         return sla.orElseGet(() ->
                 slaPoliticaRepository.findFirstByRolSolicitanteAndActivoTrue(Rol.ALUMNO.name())
                         .orElseThrow(() -> new RuntimeException("No hay política SLA activa")));
