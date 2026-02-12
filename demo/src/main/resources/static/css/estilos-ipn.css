@@ -1,0 +1,70 @@
+/* estilos-ipn.css */
+:root {
+    /* Paleta Oficial IPN */
+    --ipn-guinda: #6C1D45;
+    --ipn-guinda-dark: #4a132f;
+    --ipn-dorado: #B38E5D;
+    
+    /* Fondos Escolares (Limpio y legible) */
+    --bg-escolar: #f4f6f9; /* Un gris azulado muy pálido, profesional */
+    --text-muted: #6c757d;
+}
+
+body {
+    background-color: var(--bg-escolar);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* --- 1. Navbar Institucional --- */
+.navbar-ipn {
+    background-color: var(--ipn-guinda);
+    /* Línea dorada inferior: El sello distintivo del IPN */
+    border-bottom: 4px solid var(--ipn-dorado); 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand, .nav-link {
+    color: white !important;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: var(--ipn-dorado) !important; /* Brilla dorado al pasar el mouse */
+}
+
+/* --- 2. Tarjetas (El papel digital) --- */
+.card-escolar {
+    background: white;
+    border: none;
+    /* Borde superior guinda para identificar secciones */
+    border-top: 5px solid var(--ipn-guinda); 
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08); /* Sombra suave */
+}
+
+.card-header-escolar {
+    background-color: white;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    color: var(--ipn-guinda);
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+/* --- 3. Botones Oficiales --- */
+.btn-ipn {
+    background-color: var(--ipn-guinda);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-ipn:hover {
+    background-color: var(--ipn-guinda-dark);
+    transform: translateY(-2px); /* Efecto de elevación */
+    box-shadow: 0 4px 8px rgba(108, 29, 69, 0.4);
+    color: white;
+}

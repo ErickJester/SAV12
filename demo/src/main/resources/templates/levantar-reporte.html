@@ -1,191 +1,109 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Levantar Reporte - SAV12</title>
-
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-
-    <!-- ===== ESTILOS DEL FORMULARIO ===== -->
-    <style>
-
-        body {
-            background: #eef1f4;
-            font-family: 'Helvetica', sans-serif;
-        }
-
-        .form-card {
-            background: white;
-            padding: 35px;
-            max-width: 700px;
-            margin: 40px auto;
-            border-radius: 18px;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.12);
-        }
-
-        .form-card h1 {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .form-subtitle {
-            color: #777;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            margin-bottom: 6px;
-            font-size: 15px;
-            font-weight: bold;
-            color: #444;
-        }
-
-        input, textarea, select {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 7px;
-            font-size: 15px;
-            width: 100%;
-            background: #fafafa;
-            transition: 0.2s;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            border-color: #5dbb63;
-            outline: none;
-            background: white;
-        }
-
-        .row-2 {
-            display: flex;
-            gap: 20px;
-        }
-
-        .button-green {
-            background: #69c779;
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            font-size: 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            transition: 0.25s;
-        }
-
-        .button-green:hover {
-            background: #57ad68;
-        }
-
-        .button-white {
-            display: inline-block;
-            padding: 12px 22px;
-            background: white;
-            border-radius: 30px;
-            border: 2px solid #ccc;
-            margin-top: 15px;
-            transition: 0.25s;
-            font-weight: bold;
-        }
-
-        .button-white:hover {
-            background: #f1f1f1;
-            border-color: #aaa;
-        }
-
-        .success-message {
-            color: #2e7d32;
-            font-weight: bold;
-            margin-top: 20px;
-            font-size: 17px;
-        }
-
-    </style>
-
-    <!-- FIX: Evita que inputs queden bloqueados -->
-    <style>
-        input, textarea, select {
-            pointer-events: auto !important;
-            line-height: normal !important;
-            background: #fff !important;
-            z-index: 10;
-            position: relative;
-        }
-    </style>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Reporte - SAV12</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link th:href="@{/css/estilos-ipn.css}" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="form-card">
+    <nav class="navbar navbar-ipn mb-5">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="bi bi-shield-lock-fill me-2"></i> SAV12 - Soporte Técnico
+            </span>
+            <a href="/" class="btn btn-outline-light btn-sm">Salir</a>
+        </div>
+    </nav>
 
-    <h1>Levantar un Reporte</h1>
-    <p class="form-subtitle">Describe el problema y su prioridad para que un técnico pueda atenderlo.</p>
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                
+                <div class="card card-escolar">
+                    <div class="card-header-escolar">
+                        <i class="bi bi-file-earmark-plus"></i> Detalles del Incidente
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        
+                        <div th:if="${mensaje}" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div th:text="${mensaje}"></div>
+                        </div>
 
-    <form th:action="@{/levantar-reporte}" th:object="${reporte}" method="post">
+                        <form th:action="@{/levantar-reporte}" th:object="${reporte}" method="post">
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">Boleta / No. Empleado</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                        <input type="text" th:field="*{boleta}" class="form-control" placeholder="2023..." required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">Salón / Laboratorio</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                        <input type="text" th:field="*{salon}" class="form-control" placeholder="Ej. Lab Redes" required>
+                                    </div>
+                                </div>
+                            </div>
 
-        <div class="row-2">
-            <div class="form-group">
-                <label>Boleta</label>
-                <input type="text" th:field="*{boleta}" placeholder="Ejemplo: 2023001234" required>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">Fecha del Suceso</label>
+                                    <input type="date" th:field="*{fecha}" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">Hora Aproximada</label>
+                                    <input type="time" th:field="*{hora}" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Asunto</label>
+                                <input type="text" th:field="*{titulo}" class="form-control" placeholder="Ej. El proyector no da imagen" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Descripción Detallada</label>
+                                <textarea th:field="*{descripcion}" class="form-control" rows="4" placeholder="Explica brevemente qué falló..." required></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted">Nivel de Urgencia</label>
+                                <select th:field="*{prioridad}" class="form-select">
+                                    <option value="BAJA">Baja (Puede esperar)</option>
+                                    <option value="MEDIA">Media (Afecta la clase)</option>
+                                    <option value="ALTA">Alta (Bloqueo total / Urgente)</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <a href="/" class="btn btn-secondary me-md-2">Cancelar</a>
+                                <button type="submit" class="btn btn-ipn px-5">
+                                    <i class="bi bi-send-fill me-2"></i> Enviar Reporte
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
             </div>
-
-            <div class="form-group">
-                <label>Salón</label>
-                <input type="text" th:field="*{salon}" placeholder="Ejemplo: 2011" required>
-            </div>
         </div>
+    </div>
 
-        <div class="row-2">
-            <div class="form-group">
-                <label>Fecha del reporte</label>
-                <input type="date" th:field="*{fecha}" required>
-            </div>
-
-            <div class="form-group">
-                <label>Hora del reporte</label>
-                <input type="time" th:field="*{hora}" required>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Título del reporte</label>
-            <input type="text" th:field="*{titulo}" placeholder="Ejemplo: No enciende la impresora" required>
-        </div>
-
-        <div class="form-group">
-            <label>Descripción detallada</label>
-            <textarea th:field="*{descripcion}" rows="5" placeholder="Describe el problema con detalle..." required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Prioridad</label>
-            <select th:field="*{prioridad}">
-                <option value="ALTA">Alta</option>
-                <option value="MEDIA">Media</option>
-                <option value="BAJA">Baja</option>
-            </select>
-        </div>
-
-        <button type="submit" class="button-green">Enviar Reporte</button>
-
-    </form>
-
-    <p th:if="${mensaje}" th:text="${mensaje}" class="success-message"></p>
-
-    <a href="/" class="button-white">Regresar</a>
-
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
