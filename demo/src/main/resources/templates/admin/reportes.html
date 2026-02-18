@@ -594,7 +594,7 @@
                     </div>
                     <small th:text="${ticket.titulo}">Título</small>
                     <div class="mt-1">
-                        <span class="badge bg-danger" th:text="${ticket.contadorReaperturas} + ' reaperturas'">0</span>
+                        <span class="badge bg-danger" th:text="${ticket.reabiertos} + ' reaperturas'">0</span>
                     </div>
                 </div>
             </div>
@@ -604,13 +604,13 @@
                 <h6 class="fw-semibold mb-3">
                     <i class="bi bi-hourglass-split text-warning"></i> Mayor Tiempo Sin Resolver
                 </h6>
-                <div th:each="ticket : ${ticketsProblematicos.mayorTiempoSinResolver}" class="mb-3 p-2 bg-light rounded">
+                <div th:each="ticket : ${ticketsProblematicos.mayorTiempo}" class="mb-3 p-2 bg-light rounded">
                     <div class="fw-semibold">
                         <a th:href="@{/admin/ticket/{id}(id=${ticket.id})}" th:text="'#' + ${ticket.id}">ID</a>
                     </div>
                     <small th:text="${ticket.titulo}">Título</small>
                     <div class="mt-1">
-                        <span class="badge bg-warning" th:text="${ticket.diasAbierto} + ' días'">0 días</span>
+                        <span class="badge bg-warning" th:text="${ticket.tiempoMin} + ' min'">0 min</span>
                     </div>
                 </div>
             </div>

@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.time.Duration;
+
 @Service
 public class ReporteService {
 
@@ -635,8 +637,8 @@ public List<Map<String, Object>> generarAnalisisPorUbicaciones(LocalDateTime des
     // ===== TOP TICKETS PROBLEMÁTICOS =====
     // =========================
 
-    @Transactional(readOnly = true)
-    public Map<String, Object> generarTopTicketsProblematicos(LocalDateTime desde, LocalDateTime hasta) {
+        @Transactional(readOnly = true)
+        public Map<String, Object> generarTopTicketsProblematicos(LocalDateTime desde, LocalDateTime hasta) {
         List<Ticket> tickets = ticketRepository.findAll()
                 .stream()
                 .filter(t -> t.getFechaCreacion() != null
@@ -646,65 +648,136 @@ public List<Map<String, Object>> generarAnalisisPorUbicaciones(LocalDateTime des
 
         Map<String, Object> problematicos = new HashMap<>();
 
-        // Top 5 tickets más reabiertos
+        // Referencia para calcular "cuánto llevan abiertos" / "cuánto llevan esperando"
+        // Si el reporte es de un periodo pasado, usamos 'hasta' para no inflar tiempos con "ahora".
+        LocalDateTime ahora = LocalDateTime.now();
+        final LocalDateTime referencia = (hasta != null && hasta.isBefore(ahora)) ? hasta : ahora;
+
+        // =========================
+        // 1) Top 5 tickets más reabiertos
+        // (Template usa: contadorReaperturas)
+        // (ExportService usa: tecnicoAsignado y contadorReaperturas)
+        // =========================
         List<Map<String, Object>> masReabiertos = tickets.stream()
                 .filter(t -> t.getReabiertoCount() != null && t.getReabiertoCount() > 0)
                 .sorted((a, b) -> Integer.compare(b.getReabiertoCount(), a.getReabiertoCount()))
                 .limit(5)
                 .map(t -> {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("id", t.getId());
-                    item.put("titulo", t.getTitulo());
-                    item.put("reabiertos", t.getReabiertoCount());
-                    item.put("estado", t.getEstado().name());
-                    item.put("tecnico", t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
-                    return item;
+                        Map<String, Object> item = new HashMap<>();
+                        int reabiertos = (t.getReabiertoCount() != null ? t.getReabiertoCount() : 0);
+                        String tecnico = (t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
+
+                        item.put("id", t.getId());
+                        item.put("titulo", t.getTitulo());
+                        item.put("estado", t.getEstado().name());
+
+                        // alias para template / export
+                        item.put("reabiertos", reabiertos);
+                        item.put("contadorReaperturas", reabiertos);
+
+                        item.put("tecnico", tecnico);
+                        item.put("tecnicoAsignado", tecnico);
+
+                        return item;
                 })
                 .collect(Collectors.toList());
 
-        // Top 5 tickets con mayor tiempo de resolución
-        List<Map<String, Object>> mayorTiempo = tickets.stream()
-                .filter(t -> t.getTiempoResolucionSeg() != null && t.getFechaResolucion() != null)
-                .sorted((a, b) -> Integer.compare(b.getTiempoResolucionSeg(), a.getTiempoResolucionSeg()))
+        // =========================
+        // 2) Top 5 tickets con mayor tiempo SIN resolver
+        // (ESTO es lo que tu template intenta leer: mayorTiempoSinResolver)
+        // =========================
+        List<Map<String, Object>> mayorTiempoSinResolver = tickets.stream()
+                .filter(t -> t.getFechaCreacion() != null)
+                .filter(t -> t.getEstado() != EstadoTicket.RESUELTO
+                        && t.getEstado() != EstadoTicket.CERRADO
+                        && t.getEstado() != EstadoTicket.CANCELADO)
+                .sorted((a, b) -> Long.compare(
+                        Duration.between(b.getFechaCreacion(), referencia).toDays(),
+                        Duration.between(a.getFechaCreacion(), referencia).toDays()
+                ))
                 .limit(5)
                 .map(t -> {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("id", t.getId());
-                    item.put("titulo", t.getTitulo());
-                    item.put("tiempoMin", Math.round(t.getTiempoResolucionSeg() / 60.0));
-                    item.put("tecnico", t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
-                    return item;
+                        Map<String, Object> item = new HashMap<>();
+                        String tecnico = (t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
+                        long diasAbierto = Duration.between(t.getFechaCreacion(), referencia).toDays();
+
+                        item.put("id", t.getId());
+                        item.put("titulo", t.getTitulo());
+                        item.put("estado", t.getEstado().name());
+                        item.put("tecnico", tecnico);
+                        item.put("tecnicoAsignado", tecnico);
+                        item.put("diasAbierto", Math.max(0, diasAbierto));
+
+                        return item;
                 })
                 .collect(Collectors.toList());
 
-        // Tickets críticos sin resolver
+        // =========================
+        // 3) Top 5 tickets SIN primera respuesta (lo que tú pediste)
+        // (Template usa: sinPrimeraRespuesta y horasEspera)
+        // =========================
+        List<Map<String, Object>> sinPrimeraRespuesta = tickets.stream()
+                .filter(t -> t.getFechaCreacion() != null)
+                .filter(t -> t.getFechaPrimeraRespuesta() == null)
+                .filter(t -> t.getEstado() == EstadoTicket.ABIERTO
+                        || t.getEstado() == EstadoTicket.REABIERTO
+                        || t.getEstado() == EstadoTicket.EN_PROCESO
+                        || t.getEstado() == EstadoTicket.EN_ESPERA)
+                .sorted((a, b) -> Long.compare(
+                        Duration.between(b.getFechaCreacion(), referencia).toHours(),
+                        Duration.between(a.getFechaCreacion(), referencia).toHours()
+                ))
+                .limit(5)
+                .map(t -> {
+                        Map<String, Object> item = new HashMap<>();
+                        String tecnico = (t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
+                        long horas = Duration.between(t.getFechaCreacion(), referencia).toHours();
+
+                        item.put("id", t.getId());
+                        item.put("titulo", t.getTitulo());
+                        item.put("estado", t.getEstado().name());
+                        item.put("tecnico", tecnico);
+                        item.put("tecnicoAsignado", tecnico);
+                        item.put("horasEspera", Math.max(0, horas));
+
+                        return item;
+                })
+                .collect(Collectors.toList());
+
+        // =========================
+        // 4) Tickets críticos sin resolver (ya lo tenías)
+        // =========================
         List<Map<String, Object>> criticosSinResolver = tickets.stream()
                 .filter(t -> t.getPrioridad() == Prioridad.ALTA
                         && t.getEstado() != EstadoTicket.RESUELTO
                         && t.getEstado() != EstadoTicket.CERRADO)
                 .limit(5)
                 .map(t -> {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("id", t.getId());
-                    item.put("titulo", t.getTitulo());
-                    item.put("estado", t.getEstado().name());
-                    item.put("tecnico", t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
-                    
-                    // Calcular días desde creación
-                    long diasDesdeCreacion = java.time.Duration.between(t.getFechaCreacion(), LocalDateTime.now()).toDays();
-                    item.put("diasAbierto", diasDesdeCreacion);
-                    
-                    return item;
+                        Map<String, Object> item = new HashMap<>();
+                        item.put("id", t.getId());
+                        item.put("titulo", t.getTitulo());
+                        item.put("estado", t.getEstado().name());
+                        item.put("tecnico", t.getAsignadoA() != null ? t.getAsignadoA().getNombre() : "Sin asignar");
+
+                        long diasDesdeCreacion = Duration.between(t.getFechaCreacion(), referencia).toDays();
+                        item.put("diasAbierto", Math.max(0, diasDesdeCreacion));
+
+                        return item;
                 })
                 .collect(Collectors.toList());
 
+        // Keys EXACTAS como las pide el template
         problematicos.put("masReabiertos", masReabiertos);
-        problematicos.put("mayorTiempo", mayorTiempo);
+
+        // dejamos el viejo por si lo usas en otro lado
+        problematicos.put("mayorTiempo", new ArrayList<>());
+
+        problematicos.put("mayorTiempoSinResolver", mayorTiempoSinResolver);
+        problematicos.put("sinPrimeraRespuesta", sinPrimeraRespuesta);
         problematicos.put("criticosSinResolver", criticosSinResolver);
 
         return problematicos;
-    }
-
+        }
     // =========================
     // ===== SLA CORE ==========
     // =========================
