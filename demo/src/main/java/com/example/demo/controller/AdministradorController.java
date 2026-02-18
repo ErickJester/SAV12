@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,6 +43,9 @@ public class AdministradorController {
 
     @Autowired
     private ComentarioService comentarioService;
+
+    @Autowired
+    private ExportService exportService;
 
     @GetMapping("/panel")
     public String panel(HttpSession session, Model model) {
@@ -90,7 +94,6 @@ public class AdministradorController {
                 usuario.setRol(nuevoRol);
                 usuarioService.guardarUsuario(usuario);
             } catch (IllegalArgumentException ex) {
-                // rol inválido -> no revienta, solo redirige con error
                 return "redirect:/admin/usuarios?error=rolinvalido";
             }
         }
@@ -165,7 +168,7 @@ public class AdministradorController {
         Usuario admin = (Usuario) session.getAttribute("usuario");
         if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
 
-        // Normaliza periodo (UI y backend alineados)
+        // Normaliza periodo
         if (periodo == null || periodo.isBlank()) {
             periodo = "semanal";
         }
@@ -196,14 +199,12 @@ public class AdministradorController {
                         desdeDate = d.atStartOfDay();
                         hastaDate = h.atTime(LocalTime.MAX);
                     } catch (Exception ex) {
-                        // fechas inválidas -> fallback semanal
                         periodo = "semanal";
                         desde = null;
                         hasta = null;
                         desdeDate = ahora.minusWeeks(1);
                     }
                 } else {
-                    // custom incompleto -> fallback semanal
                     periodo = "semanal";
                     desde = null;
                     hasta = null;
@@ -217,29 +218,56 @@ public class AdministradorController {
                 break;
         }
 
-        // Un solo camino: siempre por periodo
+        // ===== OBTENER TODOS LOS REPORTES =====
+        
+        // KPIs Ejecutivos
+        Map<String, Object> kpis = reporteService.generarKPIsEjecutivos(desdeDate, hastaDate);
+        
+        // Reportes existentes
         Map<String, Object> reporteSLA = reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate);
         Map<String, Long> reportePorEstado = reporteService.generarReportePorEstadoPorPeriodo(desdeDate, hastaDate);
         Map<String, Object> reporteGeneral = reporteService.generarReporteGeneralPorPeriodo(desdeDate, hastaDate);
         List<Map<String, Object>> topCategorias = reporteService.generarTopCategoriasPorPeriodo(desdeDate, hastaDate);
+        
+        // Nuevos reportes
+        Map<String, Object> analisisTiempos = reporteService.generarAnalisisTiempos(desdeDate, hastaDate);
+        List<Map<String, Object>> desempenoTecnicos = reporteService.generarDesempenoTecnicos(desdeDate, hastaDate);
+        List<Map<String, Object>> analisisPorPrioridad = reporteService.generarAnalisisPorPrioridad(desdeDate, hastaDate);
+        List<Map<String, Object>> analisisPorUbicaciones = reporteService.generarAnalisisPorUbicaciones(desdeDate, hastaDate);
+        Map<String, Object> alertas = reporteService.generarAlertas(desdeDate, hastaDate);
+        Map<String, Object> ticketsProblematicos = reporteService.generarTopTicketsProblematicos(desdeDate, hastaDate);
 
-        // Siempre setearlo para el selector
+        // Pasar todo al modelo
         model.addAttribute("periodoSeleccionado", periodo);
         model.addAttribute("desde", desde);
         model.addAttribute("hasta", hasta);
 
+        // KPIs
+        model.addAttribute("kpis", kpis);
+        
+        // Reportes base
         model.addAttribute("reporteSLA", reporteSLA);
         model.addAttribute("reportePorEstado", reportePorEstado);
         model.addAttribute("reporteGeneral", reporteGeneral);
         model.addAttribute("topCategorias", topCategorias);
+        
+        // Nuevos reportes
+        model.addAttribute("analisisTiempos", analisisTiempos);
+        model.addAttribute("desempenoTecnicos", desempenoTecnicos);
+        model.addAttribute("analisisPorPrioridad", analisisPorPrioridad);
+        model.addAttribute("analisisPorUbicaciones", analisisPorUbicaciones);
+        model.addAttribute("alertas", alertas);
+        model.addAttribute("ticketsProblematicos", ticketsProblematicos);
+        
         model.addAttribute("usuario", admin);
 
         return "admin/reportes";
     }
 
-    @GetMapping("/reportes/export")
-    public ResponseEntity<byte[]> exportarReporteCSV(
-            @RequestParam(required = false, defaultValue = "semanal") String periodo,
+    // ===== EXPORTACIÓN PDF =====
+    @GetMapping("/reportes/export/pdf")
+    public ResponseEntity<byte[]> exportarReportePDF(
+            @RequestParam(defaultValue = "mensual") String periodo,
             HttpSession session) {
         
         Usuario admin = (Usuario) session.getAttribute("usuario");
@@ -247,7 +275,68 @@ public class AdministradorController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Calcular fechas según el periodo (misma lógica que en /reportes)
+        try {
+            // Obtener todos los datos del reporte
+            Map<String, Object> datos = obtenerDatosReporte(periodo);
+            
+            // Generar PDF
+            byte[] pdfBytes = exportService.generarReportePDF(datos);
+            
+            // Configurar headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            String filename = "reporte_sav12_" + periodo + "_" + 
+                             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".pdf";
+            headers.setContentDispositionFormData("attachment", filename);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+                    
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ===== EXPORTACIÓN CSV =====
+    @GetMapping("/reportes/export/csv")
+    public ResponseEntity<String> exportarReporteCSV(
+            @RequestParam(defaultValue = "mensual") String periodo,
+            HttpSession session) {
+        
+        Usuario admin = (Usuario) session.getAttribute("usuario");
+        if (admin == null || admin.getRol() != Rol.ADMIN) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            // Obtener todos los datos del reporte
+            Map<String, Object> datos = obtenerDatosReporte(periodo);
+            
+            // Generar CSV
+            String csv = exportService.generarReporteCSV(datos);
+            
+            // Configurar headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv; charset=utf-8"));
+            String filename = "reporte_sav12_" + periodo + "_" + 
+                             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
+            headers.setContentDispositionFormData("attachment", filename);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body("\uFEFF" + csv); // BOM para UTF-8
+                    
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ===== MÉTODO AUXILIAR PARA CONSOLIDAR DATOS =====
+    private Map<String, Object> obtenerDatosReporte(String periodo) {
+        // Calcular fechas según el período
         LocalDateTime ahora = LocalDateTime.now();
         LocalDateTime hastaDate = ahora;
         LocalDateTime desdeDate;
@@ -268,76 +357,19 @@ public class AdministradorController {
                 break;
         }
 
-        // Obtener datos de los reportes
-        Map<String, Object> reporteSLA = reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate);
-        Map<String, Object> reporteGeneral = reporteService.generarReporteGeneralPorPeriodo(desdeDate, hastaDate);
-        List<Map<String, Object>> topCategorias = reporteService.generarTopCategoriasPorPeriodo(desdeDate, hastaDate);
-
-        // Construir CSV
-        StringBuilder csv = new StringBuilder();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        // Consolidar todos los datos
+        Map<String, Object> datos = new HashMap<>();
+        datos.put("periodo", periodo);
+        datos.put("kpis", reporteService.generarKPIsEjecutivos(desdeDate, hastaDate));
+        datos.put("reporteSLA", reporteService.generarReporteSLAPorPeriodo(desdeDate, hastaDate));
+        datos.put("analisisTiempos", reporteService.generarAnalisisTiempos(desdeDate, hastaDate));
+        datos.put("desempenoTecnicos", reporteService.generarDesempenoTecnicos(desdeDate, hastaDate));
+        datos.put("analisisPorPrioridad", reporteService.generarAnalisisPorPrioridad(desdeDate, hastaDate));
+        datos.put("analisisPorUbicaciones", reporteService.generarAnalisisPorUbicaciones(desdeDate, hastaDate));
+        datos.put("ticketsProblematicos", reporteService.generarTopTicketsProblematicos(desdeDate, hastaDate));
+        datos.put("alertas", reporteService.generarAlertas(desdeDate, hastaDate));
         
-        // Encabezado del reporte
-        csv.append("REPORTE DE TICKETS - PERIODO: ").append(periodo.toUpperCase()).append("\n");
-        csv.append("Generado: ").append(ahora.format(formatter)).append("\n");
-        csv.append("Rango: ").append(desdeDate.format(formatter))
-           .append(" - ").append(hastaDate.format(formatter)).append("\n");
-        csv.append("\n");
-
-        // Sección: Tickets General
-        csv.append("=== TICKETS GENERAL ===\n");
-        csv.append("Métrica,Valor\n");
-        csv.append("Total tickets,").append(reporteGeneral.get("totalTickets")).append("\n");
-        csv.append("Tickets abiertos,").append(reporteGeneral.get("ticketsAbiertos")).append("\n");
-        csv.append("Tickets reabiertos,").append(reporteGeneral.get("ticketsReabiertos")).append("\n");
-        csv.append("Tickets en proceso,").append(reporteGeneral.get("ticketsEnProceso")).append("\n");
-        csv.append("Tickets en espera,").append(reporteGeneral.get("ticketsEnEspera")).append("\n");
-        csv.append("Tickets resueltos,").append(reporteGeneral.get("ticketsResueltos")).append("\n");
-        csv.append("Tickets cerrados,").append(reporteGeneral.get("ticketsCerrados")).append("\n");
-        csv.append("Tickets cancelados,").append(reporteGeneral.get("ticketsCancelados")).append("\n");
-        csv.append("\n");
-
-        // Sección: SLA Primera Respuesta
-        csv.append("=== SLA PRIMERA RESPUESTA ===\n");
-        csv.append("Métrica,Valor\n");
-        csv.append("Cumplimiento (%),").append(reporteSLA.get("slaPrimeraRespuestaPorcentaje")).append("%\n");
-        csv.append("Tickets cumplen SLA,").append(reporteSLA.get("ticketsCumplenPrimeraRespuesta")).append("\n");
-        csv.append("Tickets incumplen SLA,").append(reporteSLA.get("ticketsIncumplenPrimeraRespuesta")).append("\n");
-        csv.append("Total tickets analizados,").append(reporteSLA.get("totalTickets")).append("\n");
-        csv.append("\n");
-
-        // Sección: SLA Resolución
-        csv.append("=== SLA RESOLUCIÓN ===\n");
-        csv.append("Métrica,Valor\n");
-        csv.append("Cumplimiento (%),").append(reporteSLA.get("slaResolucionPorcentaje")).append("%\n");
-        csv.append("Tickets cumplen SLA,").append(reporteSLA.get("ticketsCumplenResolucion")).append("\n");
-        csv.append("Tickets incumplen SLA,").append(reporteSLA.get("ticketsIncumplenResolucion")).append("\n");
-        csv.append("Total tickets analizados,").append(reporteSLA.get("totalTickets")).append("\n");
-        csv.append("\n");
-
-        // Sección: Top Categorías
-        csv.append("=== TOP CATEGORÍAS ===\n");
-        csv.append("Categoría,Cantidad\n");
-        for (Map<String, Object> cat : topCategorias) {
-            csv.append(cat.get("nombre")).append(",").append(cat.get("total")).append("\n");
-        }
-
-        // Preparar respuesta
-        byte[] csvBytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        
-        String filename = "reporte_" + periodo + "_" + 
-                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType("text/csv; charset=utf-8"));
-        headers.setContentDisposition(ContentDisposition.builder("attachment")
-                .filename(filename)
-                .build());
-        headers.add("Content-Type", "text/csv; charset=utf-8");
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(csvBytes);
+        return datos;
     }
 
     @GetMapping("/tickets")
@@ -364,7 +396,6 @@ public class AdministradorController {
             }
         }
 
-        // Esto es lo que la vista espera como "asignables"
         List<Usuario> asignables = usuarioService.obtenerUsuariosAsignables();
 
         model.addAttribute("tickets", tickets);
