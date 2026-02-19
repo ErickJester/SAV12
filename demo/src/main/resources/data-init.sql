@@ -50,14 +50,14 @@ WHERE NOT EXISTS (
 
 -- =========================
 -- USUARIOS (UPSERT por UNIQUE(correo) y/o boleta/id_trabajador)
--- Nota: contraseñas en claro solo para local
+-- Nota: contraseñas hasheadas con BCrypt (cost 12) para local
 -- =========================
 INSERT INTO usuarios (nombre, correo, password_hash, rol, boleta, id_trabajador, activo)
 VALUES
-  ('Juan Pérez',   'juan.perez@example.com',   'password123', 'ALUMNO',  '2021600001', NULL,     TRUE),
-  ('María García', 'maria.garcia@example.com', 'tecnico123',  'TECNICO', NULL,         'TEC001', TRUE),
-  ('Carlos López', 'carlos.lopez@example.com', 'tecnico123',  'TECNICO', NULL,         'TEC002', TRUE),
-  ('Admin Sistema','admin@example.com',        'admin123',    'ADMIN',   NULL,         'ADM001', TRUE)
+  ('Juan Pérez',   'juan.perez@example.com',   '$2b$12$dX/uczi3R0oRBBdVTC2o6.JU1E/.FzyHSq0unoUwcECaHAI7LnIli', 'ALUMNO',  '2021600001', NULL,     TRUE),
+  ('María García', 'maria.garcia@example.com', '$2b$12$fBKZoUpionSpTY8gz/GiJ.s4Jye5BwcVGrQbnSYkgL5qVgHjsfxZy',  'TECNICO', NULL,         'TEC001', TRUE),
+  ('Carlos López', 'carlos.lopez@example.com', '$2b$12$fBKZoUpionSpTY8gz/GiJ.s4Jye5BwcVGrQbnSYkgL5qVgHjsfxZy',  'TECNICO', NULL,         'TEC002', TRUE),
+  ('Admin Sistema','admin@example.com',        '$2b$12$k2WHo/zzUJAeatXzkg0FluI7zQDvj/U/KiwJ9sc2MxMU7zxil4AJ6',    'ADMIN',   NULL,         'ADM001', TRUE)
 AS new_row
 ON DUPLICATE KEY UPDATE
   nombre        = new_row.nombre,

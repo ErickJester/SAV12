@@ -5,6 +5,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,9 @@ public class HomeController {
     @Autowired
     private com.example.demo.service.EmailService emailService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // =========================
     // helpers
     // =========================
@@ -39,6 +43,10 @@ public class HomeController {
 
     private static String norm(String s) {
         return isBlank(s) ? null : s.trim();
+    }
+
+    private static boolean isBcryptHash(String hash) {
+        return hash != null && (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$"));
     }
 
     // =========================
@@ -88,8 +96,26 @@ public class HomeController {
             return "login";
         }
 
-        // Nota: lo de password hash lo dejas para el final, así que aquí sigue el equals crudo.
-        if (!usuario.getPasswordHash().equals(password)) {
+        String storedPassword = usuario.getPasswordHash();
+        boolean passwordOk;
+
+        if (isBcryptHash(storedPassword)) {
+            passwordOk = passwordEncoder.matches(password, storedPassword);
+        } else {
+            passwordOk = storedPassword != null && storedPassword.equals(password);
+            if (passwordOk) {
+                usuario.setPasswordHash(passwordEncoder.encode(password));
+                try {
+                    usuarioService.guardarUsuario(usuario);
+                } catch (DataAccessException dae) {
+                    logger.error("DB error while migrating legacy password for user {}: {}", usuario.getCorreo(), dae.getMessage());
+                    model.addAttribute("mensaje", "Error de conexión a la base de datos. Intenta de nuevo más tarde.");
+                    return "login";
+                }
+            }
+        }
+
+        if (!passwordOk) {
             model.addAttribute("mensaje", "Contraseña incorrecta");
             return "login";
         }
@@ -235,7 +261,7 @@ public class HomeController {
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
         usuario.setCorreo(correo);
-        usuario.setPasswordHash(registro.getPassword()); // lo dejas así por ahora
+        usuario.setPasswordHash(passwordEncoder.encode(registro.getPassword()));
         usuario.setRol(rol);
 
         // Asignación consistente (nunca ambos)
