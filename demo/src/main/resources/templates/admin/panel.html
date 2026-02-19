@@ -4,290 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador - SAV12</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link th:href="@{/css/estilos-ipn.css}" rel="stylesheet">
+
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-dark: #1e40af;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #0ea5e9;
-            --light-bg: #f8fafc;
-            --border-light: #e2e8f0;
-        }
-
         body {
-            background: var(--light-bg);
-            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-escolar);
         }
 
-        .navbar-custom {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .navbar-custom .navbar-brand {
-            font-weight: 700;
-            font-size: 20px;
-        }
-
-        .sidebar {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            padding: 20px 0;
-        }
-
-        .sidebar .nav-link {
-            color: #475569;
-            padding: 12px 20px;
-            border-left: 4px solid transparent;
+        /* --- EL ESTILO EXACTO QUE TIENEN LAS OTRAS VISTAS --- */
+        .navbar-nav .nav-link {
+            font-size: 14.5px;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+            border-radius: 6px;
             transition: all 0.3s ease;
-            font-weight: 500;
-            font-size: 14px;
         }
-
-        .sidebar .nav-link:hover {
-            background: var(--light-bg);
-            border-left-color: #7c3aed;
-            color: #7c3aed;
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
-
-        .sidebar .nav-link.active {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(109, 40, 217, 0.1) 100%);
-            border-left-color: #7c3aed;
-            color: #7c3aed;
-        }
-
-        .header-section {
-            background: white;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            border-top: 4px solid #7c3aed;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-        }
-
-        .stat-card h3 {
-            font-size: 32px;
+        .navbar-nav .nav-link.active {
+            background-color: var(--ipn-dorado) !important;
+            color: white !important;
             font-weight: 700;
-            color: #7c3aed;
-            margin: 0;
         }
 
-        .stat-card p {
-            color: #64748b;
-            margin: 8px 0 0 0;
-            font-size: 14px;
-        }
+        /* --- Encabezado del Panel --- */
+        .header-section { background: white; padding: 25px 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; border-left: 5px solid var(--ipn-dorado); }
+        /* --- Tarjetas de Estadísticas --- */
+        .stat-card { background: white; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s ease; border-top: 4px solid var(--ipn-guinda); }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(108, 29, 69, 0.15); }
+        .stat-card h3 { font-size: 32px; font-weight: 700; color: var(--ipn-guinda); margin: 0; }
+        .stat-card p { color: var(--text-muted); margin: 8px 0 0 0; font-size: 14px; font-weight: 500; }
 
-        .stat-card.open { border-top-color: var(--info-color); }
-        .stat-card.open h3 { color: var(--info-color); }
+        .stat-card.open { border-top-color: #0ea5e9; }
+        .stat-card.open h3 { color: #0ea5e9; }
+        .stat-card.progress { border-top-color: #f59e0b; }
+        .stat-card.progress h3 { color: #f59e0b; }
+        .stat-card.resolved { border-top-color: #10b981; }
+        .stat-card.resolved h3 { color: #10b981; }
+        .stat-card.closed { border-top-color: #64748b; }
+        .stat-card.closed h3 { color: #64748b; }
 
-        .stat-card.progress { border-top-color: var(--warning-color); }
-        .stat-card.progress h3 { color: var(--warning-color); }
-
-        .stat-card.resolved { border-top-color: var(--success-color); }
-        .stat-card.resolved h3 { color: var(--success-color); }
-
-        .stat-card.closed { border-top-color: #9ca3af; }
-        .stat-card.closed h3 { color: #9ca3af; }
-
-        .action-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            text-decoration: none;
-            color: #1f2937;
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border: 2px solid transparent;
-            display: block;
-        }
-
-        .action-card:hover {
-            border-color: #7c3aed;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(124, 58, 237, 0.2);
-            color: #7c3aed;
-        }
-
-        .action-card h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            margin-top: 0;
-        }
-
-        .action-card h3 i {
-            margin-right: 10px;
-            color: #7c3aed;
-        }
-
-        .action-card p {
-            font-size: 14px;
-            color: #64748b;
-            margin: 0;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 20px;
-        }
-
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
+        /* --- Tarjetas de Acciones Rápidas --- */
+        .action-card { background: white; border-radius: 12px; padding: 25px; text-decoration: none; color: #1f2937; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 2px solid transparent; display: block; }
+        .action-card:hover { border-color: var(--ipn-dorado); transform: translateY(-5px); box-shadow: 0 8px 16px rgba(179, 142, 93, 0.2); color: var(--ipn-guinda); }
+        .action-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; margin-top: 0; }
+        .action-card h3 i { margin-right: 10px; color: var(--ipn-guinda); }
+        .action-card p { font-size: 13px; color: var(--text-muted); margin: 0; }
+        .section-title { font-size: 20px; font-weight: 700; color: var(--ipn-guinda); margin-bottom: 20px; }
+        .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-        <div class="container-fluid">
-            <span class="navbar-brand">
-                <i class="bi bi-shield-check"></i> SAV12 - Panel Administrador
-            </span>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-ipn mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold" th:href="@{/admin/panel}">
+                <i class="bi bi-shield-lock-fill me-2"></i> SAV12
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="ms-auto">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-white">
-                            <i class="bi bi-person-circle"></i> <span th:text="${usuario.nombre}">Admin</span>
-                        </span>
-                        <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
-                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                        </a>
-                    </div>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    <li class="nav-item"><a th:href="@{/admin/panel}" class="nav-link active"><i class="bi bi-grid-1x2-fill me-1"></i> Inicio</a></li>
+                    <li class="nav-item"><a th:href="@{/admin/usuarios}" class="nav-link"><i class="bi bi-people-fill me-1"></i> Usuarios</a></li>
+                    <li class="nav-item"><a th:href="@{/admin/tickets}" class="nav-link"><i class="bi bi-ticket-detailed-fill me-1"></i> Tickets</a></li>
+                    <li class="nav-item"><a th:href="@{/admin/categorias}" class="nav-link"><i class="bi bi-tags-fill me-1"></i> Categorías</a></li>
+                    <li class="nav-item"><a th:href="@{/admin/ubicaciones}" class="nav-link"><i class="bi bi-geo-alt-fill me-1"></i> Ubicaciones</a></li>
+                    <li class="nav-item"><a th:href="@{/admin/reportes}" class="nav-link"><i class="bi bi-file-earmark-bar-graph-fill me-1"></i> Reportes</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-white fw-medium"><i class="bi bi-person-circle"></i> <span th:text="${usuario.nombre}">Admin</span></span>
+                    <a th:href="@{/logout}" class="btn btn-outline-light btn-sm fw-bold"><i class="bi bi-box-arrow-right"></i> Salir</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid py-4">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-lg-3 col-md-4 mb-4">
-                <div class="sidebar">
-                    <nav class="nav flex-column">
-                        <a th:href="@{/admin/panel}" class="nav-link active">
-                            <i class="bi bi-speedometer2"></i> Panel Principal
-                        </a>
-                        <a th:href="@{/admin/usuarios}" class="nav-link">
-                            <i class="bi bi-people"></i> Gestión de Usuarios
-                        </a>
-                        <a th:href="@{/admin/tickets}" class="nav-link">
-                            <i class="bi bi-ticket-perforated"></i> Tickets
-                        </a>
-                        <a th:href="@{/admin/categorias}" class="nav-link">
-                            <i class="bi bi-tags"></i> Categorías
-                        </a>
-                        <a th:href="@{/admin/ubicaciones}" class="nav-link">
-                            <i class="bi bi-geo-alt"></i> Ubicaciones
-                        </a>
-                        <a th:href="@{/admin/reportes}" class="nav-link">
-                            <i class="bi bi-bar-chart"></i> Reportes
-                        </a>
-                    </nav>
+    <div class="container pb-5"> 
+        <div class="header-section">
+            <h1 class="mb-1" style="font-size: 24px; font-weight: 700; color: var(--ipn-guinda);">
+                <i class="bi bi-building me-2"></i> CECyT 12 "Carlos Vallejo Márquez"
+            </h1>
+            <p class="text-muted mb-0">Resumen operativo del Sistema de Atención de Verificaciones</p>
+        </div>
+
+        <div class="row mb-4 g-3">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-card">
+                    <h3 th:text="${reporte.totalTickets}">0</h3>
+                    <p>Total</p>
                 </div>
             </div>
-
-            <!-- Main Content -->
-            <div class="col-lg-9 col-md-8">
-                <!-- Header -->
-                <div class="header-section">
-                    <h1 class="mb-2"><i class="bi bi-shield-check"></i> Administración del Sistema</h1>
-                    <p class="text-muted mb-0">Resumen general y control del sistema SAV12</p>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-card open">
+                    <h3 th:text="${reporte.ticketsAbiertos}">0</h3>
+                    <p>Abiertos</p>
                 </div>
-
-                <!-- Stats Grid -->
-                <div class="row mb-4">
-                    <div class="col-md-6 col-lg-4">
-                        <div class="stat-card">
-                            <h3 th:text="${reporte.totalTickets}">0</h3>
-                            <p>Total Tickets</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="stat-card open">
-                            <h3 th:text="${reporte.ticketsAbiertos}">0</h3>
-                            <p>Abiertos</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="stat-card progress">
-                            <h3 th:text="${reporte.ticketsEnProceso}">0</h3>
-                            <p>En Proceso</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="stat-card resolved">
-                            <h3 th:text="${reporte.ticketsResueltos}">0</h3>
-                            <p>Resueltos</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="stat-card closed">
-                            <h3 th:text="${reporte.ticketsCerrados}">0</h3>
-                            <p>Cerrados</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="stat-card">
-                            <h3 th:text="${reporte.ticketsCancelados}">0</h3>
-                            <p>Cancelados</p>
-                        </div>
-                    </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-card progress">
+                    <h3 th:text="${reporte.ticketsEnProceso}">0</h3>
+                    <p>En Proceso</p>
                 </div>
-
-                <!-- Acciones Rápidas -->
-                <div class="bg-white rounded-3 p-4 shadow-sm">
-                    <h2 class="section-title"><i class="bi bi-lightning"></i> Acciones Rápidas</h2>
-                    <div class="actions-grid">
-                        <a th:href="@{/admin/usuarios}" class="action-card">
-                            <h3><i class="bi bi-people-fill"></i> Usuarios</h3>
-                            <p>Gestionar roles y permisos</p>
-                        </a>
-                        <a th:href="@{/admin/tickets}" class="action-card">
-                            <h3><i class="bi bi-ticket-perforated"></i> Tickets</h3>
-                            <p>Supervisar y asignar tickets</p>
-                        </a>
-                        <a th:href="@{/admin/categorias}" class="action-card">
-                            <h3><i class="bi bi-tags-fill"></i> Categorías</h3>
-                            <p>Crear y editar categorías</p>
-                        </a>
-                        <a th:href="@{/admin/ubicaciones}" class="action-card">
-                            <h3><i class="bi bi-geo-alt-fill"></i> Ubicaciones</h3>
-                            <p>Gestionar ubicaciones</p>
-                        </a>
-                        <a th:href="@{/admin/reportes}" class="action-card">
-                            <h3><i class="bi bi-bar-chart-line-fill"></i> Reportes</h3>
-                            <p>Ver estadísticas y SLA</p>
-                        </a>
-                    </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-card resolved">
+                    <h3 th:text="${reporte.ticketsResueltos}">0</h3>
+                    <p>Resueltos</p>
                 </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-card closed">
+                    <h3 th:text="${reporte.ticketsCerrados}">0</h3>
+                    <p>Cerrados</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-card">
+                    <h3 th:text="${reporte.ticketsCancelados}">0</h3>
+                    <p>Cancelados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3 p-4 shadow-sm border-top border-4" style="border-top-color: var(--ipn-dorado) !important;">
+            <h2 class="section-title"><i class="bi bi-lightning-charge-fill text-warning"></i> Accesos Directos</h2>
+            <div class="actions-grid mt-3">
+                <a th:href="@{/admin/usuarios}" class="action-card">
+                    <h3><i class="bi bi-person-badge"></i> Personal</h3>
+                    <p>Gestionar alumnos y técnicos</p>
+                </a>
+                <a th:href="@{/admin/tickets}" class="action-card">
+                    <h3><i class="bi bi-kanban"></i> Tablero</h3>
+                    <p>Supervisar reportes activos</p>
+                </a>
+                <a th:href="@{/admin/categorias}" class="action-card">
+                    <h3><i class="bi bi-diagram-2"></i> Clasificación</h3>
+                    <p>Editar tipos de fallas</p>
+                </a>
+                <a th:href="@{/admin/ubicaciones}" class="action-card">
+                    <h3><i class="bi bi-map"></i> Mapa</h3>
+                    <p>Gestionar laboratorios/aulas</p>
+                </a>
             </div>
         </div>
     </div>

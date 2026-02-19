@@ -68,3 +68,24 @@ body {
     box-shadow: 0 4px 8px rgba(108, 29, 69, 0.4);
     color: white;
 }
+
+/* =========================================
+   AJUSTES GLOBALES DEL MENÚ SUPERIOR (NAVBAR)
+   ========================================= */
+.navbar-nav .nav-link {
+    font-size: 14.5px;
+    padding: 8px 16px !important;
+    margin: 0 4px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-nav .nav-link.active {
+    background-color: var(--ipn-dorado) !important;
+    color: white !important;
+    font-weight: 700;
+}
