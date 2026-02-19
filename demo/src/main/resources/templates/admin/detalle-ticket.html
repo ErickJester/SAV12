@@ -289,7 +289,10 @@
         <header style="margin-bottom: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1 style="margin: 0; font-size: 28px; color: #1e293b;">Detalle del Ticket #<span th:text="${ticket.id}">1</span></h1>
-                <a th:href="@{/logout}" class="btn btn-primary" style="background: #ef4444;">Cerrar Sesión</a>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit" class="btn btn-primary" style="background: #ef4444;">Cerrar Sesión</button>
+</form>
             </div>
         </header>
 

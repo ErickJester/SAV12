@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 
     <!-- Meta tags & title -->
@@ -56,8 +56,11 @@
 
         <!-- Menu -->
         <ul id="nav">
-    <li><a href="/registro">Registrarte</a></li>
-    <li><a href="/login">Iniciar sesión</a></li>
+    <li sec:authorize="isAnonymous()"><a href="/registro">Registrarte</a></li>
+    <li sec:authorize="isAnonymous()"><a href="/login">Iniciar sesión</a></li>
+    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin}">Panel admin</a></li>
+    <li sec:authorize="hasAnyRole('TECNICO','ADMIN')"><a th:href="@{/tecnico}">Panel técnico</a></li>
+    <li sec:authorize="isAuthenticated() and hasAnyRole('ALUMNO','DOCENTE','ADMINISTRATIVO')"><a th:href="@{/usuario/panel}">Mi panel</a></li>
 </ul>
 
     </nav>

@@ -177,9 +177,10 @@
                         <span class="text-white">
                             <i class="bi bi-person-circle"></i> <span th:text="${usuario.nombre}">Admin</span>
                         </span>
-                        <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
-                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                        </a>
+                        <form th:action="@{/logout}" method="post" style="display:inline;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</button>
+</form>
                     </div>
                 </div>
             </div>

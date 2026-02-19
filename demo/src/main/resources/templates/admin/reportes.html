@@ -223,9 +223,10 @@
                 <i class="bi bi-person-circle"></i>
                 <span th:text="${usuario.nombre}">Usuario</span>
             </span>
-            <a href="/logout" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-box-arrow-right"></i> Salir
-            </a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Salir</button>
+</form>
         </div>
     </div>
 </nav>
