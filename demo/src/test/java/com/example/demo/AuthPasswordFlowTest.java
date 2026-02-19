@@ -84,7 +84,16 @@ class AuthPasswordFlowTest {
                         .param("password", "incorrecta")
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/login?error=true"));
+                .andExpect(redirectedUrl("/login?error"));
+    }
+
+
+    @Test
+    void loginSinCsrfRegresa403() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("correo", "nadie@example.com")
+                        .param("password", "x"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

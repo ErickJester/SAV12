@@ -39,6 +39,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/tecnico/**").hasAnyRole("TECNICO", "ADMIN")
+                        .requestMatchers("/usuario/**").hasAnyRole("ALUMNO", "DOCENTE", "ADMINISTRATIVO", "TECNICO", "ADMIN")
+                        .requestMatchers("/dev/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -46,7 +48,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         .usernameParameter("correo")
                         .passwordParameter("password")
-                        .failureUrl("/login?error=true")
+                        .failureUrl("/login?error")
                         .successHandler((request, response, authentication) -> {
                             boolean isAdmin = authentication.getAuthorities().stream()
                                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -62,6 +64,9 @@ public class SecurityConfig {
                             }
                         })
                         .permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/403")
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
