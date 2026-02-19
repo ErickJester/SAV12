@@ -1,20 +1,23 @@
 package com.example.demo;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.demo.config.ManualSessionAuthenticationFilter;
 import com.example.demo.entity.Rol;
 import com.example.demo.entity.Usuario;
+import com.example.demo.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,53 +27,61 @@ class SecuritySmokeTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Test
-    void adminRouteSinSesionRedirigeALogin() throws Exception {
+    void adminRouteSinLoginRedirigeALogin() throws Exception {
         mockMvc.perform(get("/admin/reportes"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/login"));
+                .andExpect(redirectedUrl("http://localhost/login"));
     }
 
     @Test
-    void adminRouteConSesionManualNoRedirigeALogin() throws Exception {
-        Usuario usuario = new Usuario();
-        usuario.setNombre("Admin Test");
-        usuario.setCorreo("admin.test@example.com");
-        usuario.setRol(Rol.ADMIN);
+    void adminRouteConTecnicoRegresa403() throws Exception {
+        Usuario tecnico = new Usuario();
+        tecnico.setNombre("Tecnico");
+        tecnico.setCorreo("tecnico.stepb@example.com");
+        tecnico.setPasswordHash(passwordEncoder.encode("tec123"));
+        tecnico.setRol(Rol.TECNICO);
+        tecnico.setIdTrabajador("TEC-01");
+        tecnico.setActivo(true);
+        usuarioRepository.save(tecnico);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute(ManualSessionAuthenticationFilter.SESSION_USER_ATTRIBUTE, usuario);
+        MockHttpSession session = loginAndGetSession("tecnico.stepb@example.com", "tec123");
+
+        mockMvc.perform(get("/admin/reportes").session(session))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminRouteConAdminRegresa200() throws Exception {
+        Usuario admin = new Usuario();
+        admin.setNombre("Admin Dos");
+        admin.setCorreo("admin2.stepb@example.com");
+        admin.setPasswordHash(passwordEncoder.encode("admin123"));
+        admin.setRol(Rol.ADMIN);
+        admin.setIdTrabajador("ADM-02");
+        admin.setActivo(true);
+        usuarioRepository.save(admin);
+
+        MockHttpSession session = loginAndGetSession("admin2.stepb@example.com", "admin123");
 
         mockMvc.perform(get("/admin/reportes").session(session))
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void recursoEstaticoEsPublico() throws Exception {
-        mockMvc.perform(get("/css/style.css"))
-                .andExpect(status().isOk());
+    private MockHttpSession loginAndGetSession(String correo, String password) throws Exception {
+        MvcResult login = mockMvc.perform(post("/login")
+                        .param("correo", correo)
+                        .param("password", password)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        return (MockHttpSession) login.getRequest().getSession(false);
     }
-
-    @Test
-    void postLoginSinTokenCsrfNoRegresa403() throws Exception {
-        mockMvc.perform(post("/login")
-                        .param("correo", "usuario.no.existe@example.com")
-                        .param("password", "credencial-invalida"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void postRegistroSinTokenCsrfNoRegresa403() throws Exception {
-        String correoUnico = "stepa-" + System.nanoTime() + "@example.com";
-
-        mockMvc.perform(post("/registro")
-                        .param("nombre", "Usuario Step A")
-                        .param("correo", correoUnico)
-                        .param("password", "abc123")
-                        .param("password2", "abc123")
-                        .param("rol", "ALUMNO")
-                        .param("boleta", "2021612345"))
-                .andExpect(status().is3xxRedirection());
-    }
-
 }

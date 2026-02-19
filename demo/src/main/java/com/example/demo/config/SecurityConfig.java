@@ -1,28 +1,29 @@
 package com.example.demo.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
+import com.example.demo.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
-    private final ManualSessionAuthenticationFilter manualSessionAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(ManualSessionAuthenticationFilter manualSessionAuthenticationFilter) {
-        this.manualSessionAuthenticationFilter = manualSessionAuthenticationFilter;
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Paso A (temporal): solo protección de rutas con sesión manual.
-        // Paso B reemplazará esto por autenticación completa (UserDetailsService + formLogin + roles formales).
+        // Step B: CSRF habilitado para protección completa de formularios POST.
         http
+                .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
@@ -32,21 +33,52 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/webjars/**"
+                                "/img/**",
+                                "/webjars/**",
+                                "/favicon.ico"
                         ).permitAll()
-                        .requestMatchers("/admin/**", "/tecnico/**").authenticated()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/tecnico/**").hasAnyRole("TECNICO", "ADMIN")
+                        .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login"))
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("correo")
+                        .passwordParameter("password")
+                        .failureUrl("/login?error=true")
+                        .successHandler((request, response, authentication) -> {
+                            boolean isAdmin = authentication.getAuthorities().stream()
+                                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                            boolean isTecnico = authentication.getAuthorities().stream()
+                                    .anyMatch(a -> a.getAuthority().equals("ROLE_TECNICO"));
+
+                            if (isAdmin) {
+                                response.sendRedirect("/admin");
+                            } else if (isTecnico) {
+                                response.sendRedirect("/tecnico");
+                            } else {
+                                response.sendRedirect("/usuario/panel");
+                            }
+                        })
+                        .permitAll()
                 )
-                // Step A: CSRF disabled temporalmente. Step B lo reactiva y se agregan tokens a formularios.
-                .csrf(csrf -> csrf.disable())
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .logout(withDefaults())
-                .addFilterBefore(manualSessionAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll()
+                );
 
         return http.build();
+    }
+
+    @Bean
+    DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 }

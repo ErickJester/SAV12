@@ -5,7 +5,6 @@ import com.example.demo.DTO.ComentarioDTO;
 import com.example.demo.DTO.UbicacionDTO;
 import com.example.demo.entity.*;
 import com.example.demo.service.*;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -48,9 +47,9 @@ public class AdministradorController {
     private ExportService exportService;
 
     @GetMapping("/panel")
-    public String panel(HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String panel(java.security.Principal principal, Model model) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         Map<String, Object> reporteGeneral = reporteService.generarReporteGeneral();
         model.addAttribute("usuario", admin);
@@ -59,9 +58,9 @@ public class AdministradorController {
     }
 
     @GetMapping("/usuarios")
-    public String gestionUsuarios(HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String gestionUsuarios(java.security.Principal principal, Model model) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         List<Usuario> usuarios = usuarioService.obtenerTodosUsuarios();
         model.addAttribute("usuarios", usuarios);
@@ -72,9 +71,9 @@ public class AdministradorController {
     @PostMapping("/usuarios/{id}/cambiar-estado")
     public String cambiarEstadoUsuario(@PathVariable Long id,
                                        @RequestParam Boolean activo,
-                                       HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+                                       java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         usuarioService.cambiarEstadoUsuario(id, activo);
         return "redirect:/admin/usuarios?success=updated";
@@ -83,9 +82,9 @@ public class AdministradorController {
     @PostMapping("/usuarios/{id}/cambiar-rol")
     public String cambiarRolUsuario(@PathVariable Long id,
                                     @RequestParam String rol,
-                                    HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+                                    java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         Usuario usuario = usuarioService.obtenerPorId(id);
         if (usuario != null) {
@@ -101,9 +100,9 @@ public class AdministradorController {
     }
 
     @GetMapping("/categorias")
-    public String gestionCategorias(HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String gestionCategorias(java.security.Principal principal, Model model) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         List<Categoria> categorias = catalogoService.obtenerTodasCategorias();
         model.addAttribute("categorias", categorias);
@@ -113,27 +112,27 @@ public class AdministradorController {
     }
 
     @PostMapping("/categorias/crear")
-    public String crearCategoria(@ModelAttribute CategoriaDTO dto, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String crearCategoria(@ModelAttribute CategoriaDTO dto, java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         catalogoService.crearCategoria(dto);
         return "redirect:/admin/categorias?success=created";
     }
 
     @PostMapping("/categorias/{id}/desactivar")
-    public String desactivarCategoria(@PathVariable Long id, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String desactivarCategoria(@PathVariable Long id, java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         catalogoService.desactivarCategoria(id);
         return "redirect:/admin/categorias?success=deactivated";
     }
 
     @GetMapping("/ubicaciones")
-    public String gestionUbicaciones(HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String gestionUbicaciones(java.security.Principal principal, Model model) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         List<Ubicacion> ubicaciones = catalogoService.obtenerTodasUbicaciones();
         model.addAttribute("ubicaciones", ubicaciones);
@@ -143,30 +142,30 @@ public class AdministradorController {
     }
 
     @PostMapping("/ubicaciones/crear")
-    public String crearUbicacion(@ModelAttribute UbicacionDTO dto, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String crearUbicacion(@ModelAttribute UbicacionDTO dto, java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         catalogoService.crearUbicacion(dto);
         return "redirect:/admin/ubicaciones?success=created";
     }
 
     @PostMapping("/ubicaciones/{id}/desactivar")
-    public String desactivarUbicacion(@PathVariable Long id, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String desactivarUbicacion(@PathVariable Long id, java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         catalogoService.desactivarUbicacion(id);
         return "redirect:/admin/ubicaciones?success=deactivated";
     }
 
     @GetMapping("/reportes")
-    public String reportes(HttpSession session, Model model,
+    public String reportes(java.security.Principal principal, Model model,
                            @RequestParam(required = false) String periodo,
                            @RequestParam(required = false) String desde,
                            @RequestParam(required = false) String hasta) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         // Normaliza periodo
         if (periodo == null || periodo.isBlank()) {
@@ -268,10 +267,10 @@ public class AdministradorController {
     @GetMapping("/reportes/export/pdf")
     public ResponseEntity<byte[]> exportarReportePDF(
             @RequestParam(defaultValue = "mensual") String periodo,
-            HttpSession session) {
+            java.security.Principal principal) {
         
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -303,10 +302,10 @@ public class AdministradorController {
     @GetMapping("/reportes/export/csv")
     public ResponseEntity<String> exportarReporteCSV(
             @RequestParam(defaultValue = "mensual") String periodo,
-            HttpSession session) {
+            java.security.Principal principal) {
         
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -373,10 +372,10 @@ public class AdministradorController {
     }
 
     @GetMapping("/tickets")
-    public String verTodosTickets(HttpSession session, Model model,
+    public String verTodosTickets(java.security.Principal principal, Model model,
                                   @RequestParam(required = false) String filtro) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         List<Ticket> tickets = ticketService.obtenerTodosLosTickets();
 
@@ -406,9 +405,9 @@ public class AdministradorController {
     }
 
     @GetMapping("/ticket/{id}")
-    public String verDetalleTicket(@PathVariable Long id, HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String verDetalleTicket(@PathVariable Long id, java.security.Principal principal, Model model) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket == null) return "redirect:/admin/tickets?error=notfound";
@@ -426,9 +425,9 @@ public class AdministradorController {
     @PostMapping("/ticket/{id}/comentar")
     public String agregarComentario(@PathVariable Long id,
                                     @RequestParam String contenido,
-                                    HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+                                    java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         ComentarioDTO dto = new ComentarioDTO();
         dto.setTicketId(id);
@@ -439,9 +438,9 @@ public class AdministradorController {
     }
 
     @PostMapping("/ticket/{id}/reabrir")
-    public String reabrirTicket(@PathVariable Long id, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String reabrirTicket(@PathVariable Long id, java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         try {
             ticketService.reabrirTicket(id, admin);
@@ -452,9 +451,9 @@ public class AdministradorController {
     }
 
     @PostMapping("/tickets/{id}/asignarme")
-    public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+    public String asignarmeTicket(@PathVariable Long id, java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null) {
@@ -467,9 +466,9 @@ public class AdministradorController {
     @PostMapping("/tickets/{id}/asignar-tecnico")
     public String asignarTecnico(@PathVariable Long id,
                                  @RequestParam Long tecnicoId,
-                                 HttpSession session) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null || admin.getRol() != Rol.ADMIN) return "redirect:/login";
+                                 java.security.Principal principal) {
+        Usuario admin = currentAdmin(principal);
+        if (admin == null) return "redirect:/login";
 
         Usuario tecnico = usuarioService.obtenerPorId(tecnicoId);
         if (tecnico != null && (tecnico.getRol() == Rol.TECNICO || tecnico.getRol() == Rol.ADMIN)) {
@@ -478,4 +477,21 @@ public class AdministradorController {
 
         return "redirect:/admin/tickets?success=assigned";
     }
+
+    @GetMapping
+    public String index() {
+        return "redirect:/admin/panel";
+    }
+
+    private Usuario currentAdmin(java.security.Principal principal) {
+        if (principal == null) {
+            return null;
+        }
+        Usuario admin = usuarioService.obtenerPorCorreo(principal.getName());
+        if (admin == null || admin.getRol() != Rol.ADMIN) {
+            return null;
+        }
+        return admin;
+    }
+
 }

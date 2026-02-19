@@ -297,6 +297,7 @@
                     </div>
 
                     <form th:action="@{/admin/categorias/crear}" method="post" th:object="${nuevaCategoria}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <div class="form-group">
                             <label for="nombre">
                                 Nombre
@@ -355,6 +356,7 @@
                                     <td>
                                         <form th:if="${cat.activo}" th:action="@{/admin/categorias/{id}/desactivar(id=${cat.id})}"
                                               method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                             <button type="submit" class="btn-action btn-deactivate">
                                                 <i class="bi bi-toggle-off me-1"></i>Desactivar
                                             </button>

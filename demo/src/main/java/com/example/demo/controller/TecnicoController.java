@@ -1,48 +1,61 @@
 package com.example.demo.controller;
 
 import com.example.demo.DTO.ComentarioDTO;
-import com.example.demo.entity.*;
-import com.example.demo.service.*;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.example.demo.entity.Comentario;
+import com.example.demo.entity.EstadoTicket;
+import com.example.demo.entity.HistorialAccion;
+import com.example.demo.entity.Ticket;
+import com.example.demo.entity.Usuario;
+import com.example.demo.service.ComentarioService;
+import com.example.demo.service.FileStorageService;
+import com.example.demo.service.TicketService;
+import com.example.demo.service.UsuarioService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/tecnico")
 public class TecnicoController {
 
-    @Autowired
-    private TicketService ticketService;
+    private final TicketService ticketService;
+    private final ComentarioService comentarioService;
+    private final UsuarioService usuarioService;
+    private final FileStorageService fileStorageService;
 
-    @Autowired
-    private ComentarioService comentarioService;
+    public TecnicoController(
+            TicketService ticketService,
+            ComentarioService comentarioService,
+            UsuarioService usuarioService,
+            FileStorageService fileStorageService
+    ) {
+        this.ticketService = ticketService;
+        this.comentarioService = comentarioService;
+        this.usuarioService = usuarioService;
+        this.fileStorageService = fileStorageService;
+    }
 
-    @Autowired
-    private UsuarioService usuarioService;
+    @GetMapping
+    public String index() {
+        return "redirect:/tecnico/panel";
+    }
 
-    @Autowired
-    private FileStorageService fileStorageService;
-
-    // Panel principal del técnico
     @GetMapping("/panel")
-    public String panel(HttpSession session, Model model) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
+    public String panel(java.security.Principal principal, Model model) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
 
         List<Ticket> misTickets = ticketService.obtenerTicketsDeTecnico(tecnico).stream()
                 .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
                 .collect(Collectors.toList());
-        List<Ticket> ticketsSinAsignar = ticketService.obtenerTodosLosTickets()
-                .stream()
+        List<Ticket> ticketsSinAsignar = ticketService.obtenerTodosLosTickets().stream()
                 .filter(t -> t.getAsignadoA() == null
                         && (t.getEstado() == EstadoTicket.ABIERTO || t.getEstado() == EstadoTicket.REABIERTO))
                 .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
@@ -54,28 +67,18 @@ public class TecnicoController {
         return "tecnico/panel";
     }
 
-    // Ver mis tickets asignados
     @GetMapping("/mis-tickets")
-    public String misTickets(HttpSession session, Model model) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
-
+    public String misTickets(java.security.Principal principal, Model model) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
         List<Ticket> tickets = ticketService.obtenerTicketsDeTecnico(tecnico);
         model.addAttribute("tickets", tickets);
         model.addAttribute("usuario", tecnico);
         return "tecnico/mis-tickets";
     }
 
-    // Ver detalle de ticket
     @GetMapping("/ticket/{id}")
-    public String verDetalleTicket(@PathVariable Long id, HttpSession session, Model model) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
-
+    public String verDetalleTicket(@PathVariable Long id, java.security.Principal principal, Model model) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket == null) {
             return "redirect:/tecnico/mis-tickets?error=notfound";
@@ -92,17 +95,15 @@ public class TecnicoController {
         return "tecnico/detalle-ticket";
     }
 
-    // Cambiar estado del ticket
     @PostMapping("/ticket/{id}/cambiar-estado")
-    public String cambiarEstado(@PathVariable Long id,
-                                 @RequestParam String nuevoEstado,
-                                 @RequestParam(required = false) String observaciones,
-                                 @RequestParam(value = "evidenciaResolucion", required = false) MultipartFile evidenciaResolucion,
-                                 HttpSession session) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
+    public String cambiarEstado(
+            @PathVariable Long id,
+            @RequestParam String nuevoEstado,
+            @RequestParam(required = false) String observaciones,
+            @RequestParam(value = "evidenciaResolucion", required = false) MultipartFile evidenciaResolucion,
+            java.security.Principal principal
+    ) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
 
         try {
             EstadoTicket estado = EstadoTicket.valueOf(nuevoEstado);
@@ -118,15 +119,9 @@ public class TecnicoController {
         return "redirect:/tecnico/ticket/" + id + "?success=estadocambiado";
     }
 
-    // Agregar comentario
     @PostMapping("/ticket/{id}/comentar")
-    public String agregarComentario(@PathVariable Long id,
-                                     @RequestParam String contenido,
-                                     HttpSession session) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
+    public String agregarComentario(@PathVariable Long id, @RequestParam String contenido, java.security.Principal principal) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
 
         ComentarioDTO dto = new ComentarioDTO();
         dto.setTicketId(id);
@@ -136,13 +131,9 @@ public class TecnicoController {
         return "redirect:/tecnico/ticket/" + id;
     }
 
-    // Reabrir ticket
     @PostMapping("/ticket/{id}/reabrir")
-    public String reabrirTicket(@PathVariable Long id, HttpSession session) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
+    public String reabrirTicket(@PathVariable Long id, java.security.Principal principal) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
 
         try {
             ticketService.reabrirTicket(id, tecnico);
@@ -152,13 +143,9 @@ public class TecnicoController {
         return "redirect:/tecnico/ticket/" + id;
     }
 
-    // Asignarme un ticket
     @PostMapping("/ticket/{id}/asignar")
-    public String asignarmeTicket(@PathVariable Long id, HttpSession session) {
-        Usuario tecnico = (Usuario) session.getAttribute("usuario");
-        if (tecnico == null || tecnico.getRol() != Rol.TECNICO) {
-            return "redirect:/login";
-        }
+    public String asignarmeTicket(@PathVariable Long id, java.security.Principal principal) {
+        Usuario tecnico = usuarioService.obtenerPorCorreo(principal.getName());
 
         Ticket ticket = ticketService.obtenerTicketPorId(id);
         if (ticket != null && ticket.getAsignadoA() == null) {

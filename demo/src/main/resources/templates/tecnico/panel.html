@@ -361,6 +361,7 @@
                                     <i class="bi bi-eye"></i> Ver Detalles
                                 </a>
                                 <form th:action="@{/tecnico/ticket/{id}/asignar(id=${ticket.id})}" method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <button type="submit" class="btn-action btn-assign">
                                         <i class="bi bi-check-circle"></i> Asignarme
                                     </button>

@@ -401,6 +401,7 @@
                     <div th:if="${ticket.estado.name() != 'CERRADO'}" class="add-comment">
                         <h4>Agregar Comentario</h4>
                         <form th:action="@{/usuario/ticket/{id}/comentar(id=${ticket.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <textarea name="contenido" rows="4" class="textarea" 
                                       placeholder="Escribe tu comentario para comunicarte con el técnico..." required></textarea>
                             <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Enviar Comentario</button>
@@ -412,6 +413,7 @@
                 <div th:if="${ticket.estado.name() == 'RESUELTO' || ticket.estado.name() == 'CERRADO'}" 
                      class="section-card">
                     <form th:action="@{/usuario/ticket/{id}/reabrir(id=${ticket.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <button type="submit" class="btn btn-warning" style="width: 100%;">
                             <i class="bi bi-arrow-counterclockwise"></i> Reabrir Ticket
                         </button>

@@ -285,6 +285,7 @@
                         <td>
                             <!-- Asignar responsable -->
                             <form th:action="@{/admin/tickets/{id}/asignar-tecnico(id=${ticket.id})}" method="post" class="form-inline-assign">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <select name="tecnicoId" class="form-select form-select-sm" required>
                                     <option value="">Asignar...</option>
                                     <option th:each="asignable : ${asignables}" 

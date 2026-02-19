@@ -2,58 +2,73 @@ package com.example.demo.controller;
 
 import com.example.demo.DTO.ComentarioDTO;
 import com.example.demo.DTO.TicketDTO;
-import com.example.demo.entity.*;
-import com.example.demo.service.*;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
+import com.example.demo.entity.Comentario;
+import com.example.demo.entity.EstadoTicket;
+import com.example.demo.entity.HistorialAccion;
+import com.example.demo.entity.Rol;
+import com.example.demo.entity.Ticket;
+import com.example.demo.entity.Usuario;
+import com.example.demo.service.CatalogoService;
+import com.example.demo.service.ComentarioService;
+import com.example.demo.service.FileStorageService;
+import com.example.demo.service.TicketService;
+import com.example.demo.service.UsuarioService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/usuario")
 public class UsuarioController {
 
-    @Autowired
-    private TicketService ticketService;
+    private final TicketService ticketService;
+    private final ComentarioService comentarioService;
+    private final CatalogoService catalogoService;
+    private final UsuarioService usuarioService;
+    private final FileStorageService fileStorageService;
 
-    @Autowired
-    private ComentarioService comentarioService;
+    public UsuarioController(
+            TicketService ticketService,
+            ComentarioService comentarioService,
+            CatalogoService catalogoService,
+            UsuarioService usuarioService,
+            FileStorageService fileStorageService
+    ) {
+        this.ticketService = ticketService;
+        this.comentarioService = comentarioService;
+        this.catalogoService = catalogoService;
+        this.usuarioService = usuarioService;
+        this.fileStorageService = fileStorageService;
+    }
 
-    @Autowired
-    private CatalogoService catalogoService;
-
-    @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
-    private FileStorageService fileStorageService;
-
-    // Panel principal del usuario
     @GetMapping("/panel")
-    public String panel(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String panel(java.security.Principal principal, Model model) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
         List<Ticket> misTickets = ticketService.obtenerTicketsDeUsuario(usuario);
         List<Ticket> ticketsOrdenados = misTickets.stream()
-            .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
-            .collect(Collectors.toList());
+                .sorted(Comparator.comparing(Ticket::getFechaCreacion).reversed())
+                .collect(Collectors.toList());
         model.addAttribute("usuario", usuario);
         model.addAttribute("tickets", ticketsOrdenados);
         return "usuario/panel";
     }
 
-    // Formulario para crear ticket
     @GetMapping("/crear-ticket")
-    public String mostrarFormularioCrearTicket(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String mostrarFormularioCrearTicket(java.security.Principal principal, Model model) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
@@ -64,23 +79,24 @@ public class UsuarioController {
         return "usuario/crear-ticket";
     }
 
-    // Procesar creación de ticket
     @PostMapping("/crear-ticket")
-    public String crearTicket(@ModelAttribute TicketDTO ticketDTO, 
-                             @RequestParam(value = "archivoEvidencia", required = false) org.springframework.web.multipart.MultipartFile archivo,
-                             HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String crearTicket(
+            @ModelAttribute TicketDTO ticketDTO,
+            @RequestParam(value = "archivoEvidencia", required = false) MultipartFile archivo,
+            java.security.Principal principal,
+            Model model
+    ) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
 
         try {
-            // Guardar archivo si existe
             if (archivo != null && !archivo.isEmpty()) {
                 String nombreArchivo = fileStorageService.guardarArchivo(archivo);
                 ticketDTO.setEvidenciaProblema(nombreArchivo);
             }
-            
+
             ticketService.crearTicket(ticketDTO, usuario);
             return "redirect:/usuario/mis-tickets?success=created";
         } catch (Exception e) {
@@ -91,10 +107,9 @@ public class UsuarioController {
         }
     }
 
-    // Consultar mis tickets
     @GetMapping("/mis-tickets")
-    public String misTickets(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String misTickets(java.security.Principal principal, Model model) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
@@ -105,10 +120,9 @@ public class UsuarioController {
         return "usuario/mis-tickets";
     }
 
-    // Ver detalle de un ticket
     @GetMapping("/ticket/{id}")
-    public String verDetalleTicket(@PathVariable Long id, HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String verDetalleTicket(@PathVariable Long id, java.security.Principal principal, Model model) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
@@ -128,12 +142,9 @@ public class UsuarioController {
         return "usuario/detalle-ticket";
     }
 
-    // Agregar comentario a un ticket
     @PostMapping("/ticket/{id}/comentar")
-    public String agregarComentario(@PathVariable Long id, 
-                                     @RequestParam String contenido,
-                                     HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String agregarComentario(@PathVariable Long id, @RequestParam String contenido, java.security.Principal principal) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
@@ -146,10 +157,9 @@ public class UsuarioController {
         return "redirect:/usuario/ticket/" + id;
     }
 
-    // Reabrir ticket
     @PostMapping("/ticket/{id}/reabrir")
-    public String reabrirTicket(@PathVariable Long id, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String reabrirTicket(@PathVariable Long id, java.security.Principal principal) {
+        Usuario usuario = usuarioService.obtenerPorCorreo(principal.getName());
         if (!esUsuarioFinal(usuario)) {
             return "redirect:/login";
         }
@@ -168,7 +178,7 @@ public class UsuarioController {
 
     private boolean esUsuarioFinal(Usuario usuario) {
         return usuario != null && (usuario.getRol() == Rol.ALUMNO
-            || usuario.getRol() == Rol.DOCENTE
-            || usuario.getRol() == Rol.ADMINISTRATIVO);
+                || usuario.getRol() == Rol.DOCENTE
+                || usuario.getRol() == Rol.ADMINISTRATIVO);
     }
 }
