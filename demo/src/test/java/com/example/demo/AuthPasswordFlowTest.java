@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,7 +39,8 @@ class AuthPasswordFlowTest {
                         .param("password", "abc123")
                         .param("password2", "abc123")
                         .param("rol", "ALUMNO")
-                        .param("boleta", "2021609999"))
+                        .param("boleta", "2021609999")
+                        .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login?registro=success"));
 
@@ -62,7 +64,8 @@ class AuthPasswordFlowTest {
 
         mockMvc.perform(post("/login")
                         .param("correo", "legacy@example.com")
-                        .param("password", "legacy123"))
+                        .param("password", "legacy123")
+                        .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/usuario/panel"));
 
