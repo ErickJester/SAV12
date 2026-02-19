@@ -125,7 +125,16 @@ public class HomeController {
             return "login";
         }
 
-        session.setAttribute("usuario", usuario);
+        Usuario sessionUser = new Usuario();
+        sessionUser.setId(usuario.getId());
+        sessionUser.setNombre(usuario.getNombre());
+        sessionUser.setCorreo(usuario.getCorreo());
+        sessionUser.setRol(usuario.getRol());
+        sessionUser.setBoleta(usuario.getBoleta());
+        sessionUser.setIdTrabajador(usuario.getIdTrabajador());
+        sessionUser.setActivo(usuario.getActivo());
+
+        session.setAttribute("usuario", sessionUser);
 
         emailService.sendLoginConfirmation(usuario);
 
