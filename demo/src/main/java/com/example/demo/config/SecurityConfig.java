@@ -40,6 +40,8 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login"))
                 )
+                // Step A: CSRF disabled temporalmente. Step B lo reactiva y se agregan tokens a formularios.
+                .csrf(csrf -> csrf.disable())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(withDefaults())

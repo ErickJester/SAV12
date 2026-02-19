@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,4 +50,27 @@ class SecuritySmokeTest {
         mockMvc.perform(get("/css/style.css"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void postLoginSinTokenCsrfNoRegresa403() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("correo", "usuario.no.existe@example.com")
+                        .param("password", "credencial-invalida"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void postRegistroSinTokenCsrfNoRegresa403() throws Exception {
+        String correoUnico = "stepa-" + System.nanoTime() + "@example.com";
+
+        mockMvc.perform(post("/registro")
+                        .param("nombre", "Usuario Step A")
+                        .param("correo", correoUnico)
+                        .param("password", "abc123")
+                        .param("password2", "abc123")
+                        .param("rol", "ALUMNO")
+                        .param("boleta", "2021612345"))
+                .andExpect(status().is3xxRedirection());
+    }
+
 }
