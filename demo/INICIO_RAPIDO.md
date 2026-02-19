@@ -53,6 +53,20 @@ mvn clean package
 java -jar target/demo-0.0.1-SNAPSHOT.jar
 ```
 
+
+### 5.1 Ejecutar por perfil (DEV/PROD)
+
+```bash
+# DEV (habilita seeds: data-init.sql + DataInitializer)
+SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+
+# Alternativa DEV
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+# PROD (deshabilita seeds automáticos)
+SPRING_PROFILES_ACTIVE=prod java -jar target/demo-*.jar
+```
+
 ### 6. Acceder al Sistema
 
 Abre tu navegador en: **http://localhost:8080**
