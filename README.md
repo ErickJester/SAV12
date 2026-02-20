@@ -2,6 +2,24 @@
 
 ## 🚀 Inicio Rápido
 
+## 🚂 Despliegue en Railway (Spring Boot + MySQL)
+
+Configura el servicio con estos valores exactos para evitar fallos de arranque:
+
+1. **Root Directory**: `demo`
+2. **Build/Start**: Railway detecta Maven automáticamente con Nixpacks.
+3. **Variables de entorno obligatorias**:
+   - `NIXPACKS_JDK_VERSION=21`
+   - `SPRING_DATASOURCE_URL=jdbc:mysql://<host>:<puerto>/<database>?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true`
+   - `SPRING_DATASOURCE_USERNAME=<usuario>`
+   - `SPRING_DATASOURCE_PASSWORD=<password>`
+
+La app ya toma automáticamente:
+- `server.port=${PORT:8080}` (Railway inyecta `PORT` en runtime)
+- `SPRING_DATASOURCE_*` con fallback local para desarrollo
+
+> Si usas MySQL administrado (Railway u otro), ejecuta `demo/schema.sql` dentro de la base existente (sin `CREATE DATABASE` ni `USE`).
+
 ### 1. Prerrequisitos
 - Java 17 o superior
 - MySQL 8.0 o superior
