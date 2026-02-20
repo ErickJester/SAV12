@@ -29,9 +29,14 @@ public class EmailService {
     @Value("${app.mail.enabled:false}")
     private boolean mailEnabled;
 
+    // Antes estaba hardcodeado como "elias015serrano@gmail.com"
+    // Ahora se lee desde variable de entorno MAIL_FROM (o app.mail.from en properties)
+    @Value("${app.mail.from:noreply@sav12.com}")
+    private String mailFrom;
+
     private void sendSimple(String to, String subject, String body) {
         if (!mailEnabled || mailSender == null) {
-            System.out.println("[EmailService] Mail disabled or JavaMailSender not available - would send to: " + to + " subj: " + subject);
+            System.out.println("[EmailService] Mail disabled - would send to: " + to + " | subj: " + subject);
             return;
         }
 
@@ -39,8 +44,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
             helper.setTo(to);
-            // Usa aquí tu correo de Gmail:
-            helper.setFrom("elias015serrano@gmail.com");
+            helper.setFrom(mailFrom);
             helper.setSubject(subject);
             helper.setText(body, false);
             mailSender.send(message);
@@ -71,7 +75,10 @@ public class EmailService {
         if (ticket == null) return;
         List<Usuario> tecnicos = usuarioRepository.findByRol(Rol.TECNICO);
         String subject = "Nuevo reporte creado: " + ticket.getTitulo();
-        String body = "Se ha creado un nuevo reporte.\n\nTítulo: " + ticket.getTitulo() + "\nDescripción: " + ticket.getDescripcion() + "\nPrioridad: " + (ticket.getPrioridad() != null ? ticket.getPrioridad() : "N/A") + "\n\nPor favor revisa el sistema para más detalles.";
+        String body = "Se ha creado un nuevo reporte.\n\nTítulo: " + ticket.getTitulo()
+                + "\nDescripción: " + ticket.getDescripcion()
+                + "\nPrioridad: " + (ticket.getPrioridad() != null ? ticket.getPrioridad() : "N/A")
+                + "\n\nPor favor revisa el sistema para más detalles.";
 
         for (Usuario t : tecnicos) {
             if (t.getCorreo() != null) sendSimple(t.getCorreo(), subject, body);
@@ -83,7 +90,9 @@ public class EmailService {
         Usuario u = ticket.getCreadoPor();
         if (u.getCorreo() == null) return;
         String subject = "Actualización en tu ticket: " + ticket.getTitulo();
-        String body = "Hola " + u.getNombre() + ",\n\nTu ticket ha sido actualizado.\n\nDetalles: " + (detalles != null ? detalles : "(sin detalles)") + "\n\nEstado actual: " + ticket.getEstado() + "\n\nSaludos.";
+        String body = "Hola " + u.getNombre() + ",\n\nTu ticket ha sido actualizado.\n\nDetalles: "
+                + (detalles != null ? detalles : "(sin detalles)")
+                + "\n\nEstado actual: " + ticket.getEstado() + "\n\nSaludos.";
         sendSimple(u.getCorreo(), subject, body);
     }
 
@@ -92,11 +101,12 @@ public class EmailService {
         Usuario t = ticket.getAsignadoA();
         if (t.getCorreo() == null) return;
         String subject = "Se te ha asignado un ticket: " + ticket.getTitulo();
-        String body = "Hola " + t.getNombre() + ",\n\nSe te ha asignado el ticket: \nTítulo: " + ticket.getTitulo() + "\nDescripción: " + ticket.getDescripcion() + "\n\nPor favor revisa el sistema para más detalles.";
+        String body = "Hola " + t.getNombre() + ",\n\nSe te ha asignado el ticket:\nTítulo: "
+                + ticket.getTitulo() + "\nDescripción: " + ticket.getDescripcion()
+                + "\n\nPor favor revisa el sistema para más detalles.";
         sendSimple(t.getCorreo(), subject, body);
     }
 
-    // Public helper to send a test email (used by dev/test endpoint)
     public boolean sendTestEmail(String to, String subject, String body) {
         try {
             sendSimple(to, subject, body);
