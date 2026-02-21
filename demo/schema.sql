@@ -1,9 +1,8 @@
 -- Script SQL para crear el esquema completo de SAV12
 -- Base de datos: sav12_app
 
--- Crear la base de datos si no existe
-CREATE DATABASE IF NOT EXISTS sav12_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE sav12_app;
+-- Nota: este script debe ejecutarse sobre una base de datos ya seleccionada
+-- (compatible con proveedores administrados como Railway/MySQL gestionado).
 
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS usuarios (

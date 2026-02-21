@@ -1,0 +1,11 @@
+[build]
+# Railway detecta Maven automáticamente por el pom.xml
+builder = "nixpacks"
+
+[deploy]
+# Activa el perfil "prod" al arrancar
+startCommand = "java -Dspring.profiles.active=prod -jar target/demo-0.0.1-SNAPSHOT.jar"
+healthcheckPath = "/login"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
